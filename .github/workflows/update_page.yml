@@ -1,7 +1,7 @@
 name: Update GitHub Pages with URLs
 on:
   schedule:
-    - cron: "0 * * * *"  # Fixed the cron syntax
+    - cron: "0 * * * *"  # Runs every hour
   workflow_dispatch:
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
           <html>
           <head>
               <title>Extracted Proxy Links / RMA</title>
-               <link rel="icon" type="image/x-icon" href="favicon.png">
+              <link rel="icon" type="image/x-icon" href="favicon.png">
               <style>
                   body { font-family: Arial, sans-serif; margin: 20px; background-color: black; color: white;}
                   h1 { color: white; }
@@ -63,8 +63,8 @@ jobs:
 
           for h2 in soup.find_all('h2'):
               title = h2.get_text()
-              html_content += f"<h2>{title}</h2><ul>
-              
+              html_content += f"<h2>{title}</h2><ul>"
+
               next_sibling = h2.find_next_sibling()
               while next_sibling and next_sibling.name in ['ul', 'p']:
                   if next_sibling.name == 'ul':
@@ -85,7 +85,7 @@ jobs:
                   elif next_sibling.name == 'p':
                       text_urls = extract_urls_from_text(next_sibling.get_text())
                       for url in text_urls:
-                          html_content += "<li><a href='{url}'>{url}</a></li>"
+                          html_content += f"<li><a href='{url}'>{url}</a></li>"
                   
                   next_sibling = next_sibling.find_next_sibling()
               
