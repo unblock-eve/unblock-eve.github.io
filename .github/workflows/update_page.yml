@@ -25,10 +25,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
-      # Set current timestamp as environment variable
-      - name: Set last updated timestamp
+      # Set current timestamp in CST timezone
+      - name: Set last updated timestamp in CST timezone
         id: timestamp
-        run: echo "LAST_UPDATED=$(date +'%B %d, %Y at %I:%M %p')" >> $GITHUB_ENV
+        run: |
+          # Set the timezone to CST
+          export TZ="America/Chicago"
+          LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")  # Format the date in CST
+          echo "LAST_UPDATED=$LAST_UPDATED" >> $GITHUB_ENV
 
       # Fetch and parse webpage into HTML
       - name: Fetch and parse webpage into HTML
