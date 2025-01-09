@@ -33,6 +33,7 @@ jobs:
           export TZ="America/Chicago"
           LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")  # Format the date in CST
           echo "LAST_UPDATED=$LAST_UPDATED" >> $GITHUB_ENV
+          echo "Generated timestamp: $LAST_UPDATED"
 
       # Fetch and parse webpage into HTML
       - name: Fetch and parse webpage into HTML
