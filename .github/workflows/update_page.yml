@@ -1,0 +1,106 @@
+name: Update GitHub Pages with URLs
+on:
+  schedule:
+    - cron: "0 * * * *"  # Fixed the cron syntax
+  workflow_dispatch:
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Fetch and parse webpage into HTML
+        run: |
+          mkdir -p nirbyte
+          python - <<EOF
+          import requests
+          import re
+          from requests.adapters import HTTPAdapter
+          from requests.packages.urllib3.util.retry import Retry
+          from bs4 import BeautifulSoup
+
+          def extract_urls_from_text(text):
+              url_pattern = r'https?://[^\s<>"\']+'
+              return re.findall(url_pattern, text)
+
+          url = "https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
+          headers = {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+          }
+
+          session = requests.Session()
+          retries = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+          session.mount("https://", HTTPAdapter(max_retries=retries))
+          response = session.get(url, headers=headers)
+          soup = BeautifulSoup(response.content, 'html.parser')
+
+          html_content = """
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Extracted Proxy Links / RMA</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; }
+                  h1 { color: #333; }
+                  h2 { color: #666; margin-top: 30px; }
+                  ul { list-style-type: none; padding-left: 20px; }
+                  li { margin: 10px 0; }
+                  a { color: #0066cc; text-decoration: none; }
+                  a:hover { text-decoration: underline; }
+              </style>
+          </head>
+          <body>
+          """
+          
+          html_content += "<h1>Extracted Links and Titles</h1>"
+
+          for h2 in soup.find_all('h2'):
+              title = h2.get_text()
+              html_content += f"<h2>{title}</h2><ul>"
+              
+              next_sibling = h2.find_next_sibling()
+              while next_sibling and next_sibling.name in ['ul', 'p']:
+                  if next_sibling.name == 'ul':
+                      for li in next_sibling.find_all('li'):
+                          # Extract URLs from anchor tags
+                          if li.find('a'):
+                              for a in li.find_all('a'):
+                                  if a['href'].startswith('http'):
+                                      html_content += f"<li><a href='{a['href']}'>{a['href']}</a></li>"
+                          
+                          # Extract URLs from plain text
+                          text_urls = extract_urls_from_text(li.get_text())
+                          for url in text_urls:
+                              if url not in [a['href'] for a in li.find_all('a')]:  # Avoid duplicates
+                                  html_content += f"<li><a href='{url}'>{url}</a></li>"
+                  
+                  # Check for URLs in paragraph text
+                  elif next_sibling.name == 'p':
+                      text_urls = extract_urls_from_text(next_sibling.get_text())
+                      for url in text_urls:
+                          html_content += f"<li><a href='{url}'>{url}</a></li>"
+                  
+                  next_sibling = next_sibling.find_next_sibling()
+              
+              html_content += "</ul>"
+
+          html_content += "</body></html>"
+
+          with open('nirbyte/index.html', 'w', encoding='utf-8') as f:
+              f.write(html_content)
+          EOF
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add nirbyte/index.html
+          git commit -m "Auto-update HTML with extracted URLs and titles"
+          git push
