@@ -7,10 +7,14 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
         }
         .result {
             margin: 10px 0;
-            padding: 5px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -20,6 +24,10 @@
         .failure {
             color: red;
         }
+        .title {
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -27,35 +35,46 @@
     <div id="results"></div>
 
     <script>
-        const links = [
-            "https://github.com/unblock-eve/unblock-eve.github.io/edit/main/.github/workflows/update_page.yml",
-            "https://proxies.zapto.org/",
-            "https://roblox.com/",
-	    "https://staticin.pages.dev/",
-	    "https://school.com.apps.dj/"
-        ];
+        // Fetch the links.json file
+        fetch('links.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load links.json: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                
+                for (const [title, links] of Object.entries(data)) {
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'title';
+                    titleDiv.textContent = `Category: ${title}`;
+                    resultsDiv.appendChild(titleDiv);
 
-        const resultsDiv = document.getElementById("results");
+                    links.forEach(link => {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'result';
+                        resultDiv.textContent = `Checking: ${link}`;
+                        resultsDiv.appendChild(resultDiv);
 
-        links.forEach(link => {
-            const resultDiv = document.createElement('div');
-            resultDiv.className = 'result';
-            resultDiv.textContent = `Checking: ${link}`;
-            resultsDiv.appendChild(resultDiv);
-
-            // Use fetch to check the URL status
-            fetch(link, { mode: 'no-cors' })
-                .then(response => {
-                    // If the fetch doesn't throw, assume it connects successfully
-                    resultDiv.textContent = `${link} - ✅ Successfully Connected`;
-                    resultDiv.classList.add('success');
-                })
-                .catch(error => {
-                    // Catch errors for blocked or unreachable links
-                    resultDiv.textContent = `${link} - ❌ Failed to Connect`;
-                    resultDiv.classList.add('failure');
-                });
-        });
+                        // Use fetch to check the URL status
+                        fetch(link, { mode: 'no-cors' })
+                            .then(() => {
+                                resultDiv.textContent = `${link} - ✅ Successfully Connected`;
+                                resultDiv.classList.add('success');
+                            })
+                            .catch(() => {
+                                resultDiv.textContent = `${link} - ❌ Failed to Connect`;
+                                resultDiv.classList.add('failure');
+                            });
+                    });
+                }
+            })
+            .catch(error => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.textContent = `Error: ${error.message}`;
+            });
     </script>
 </body>
 </html>
