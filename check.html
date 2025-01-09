@@ -28,13 +28,6 @@
             font-weight: bold;
             margin-top: 20px;
         }
-        a {
-            color: blue;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -43,7 +36,7 @@
 
     <script>
         // Fetch the links.json file
-        fetch('./links.json')
+        fetch('links.json')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Failed to load links.json: ${response.statusText}`);
@@ -62,32 +55,18 @@
                     links.forEach(link => {
                         const resultDiv = document.createElement('div');
                         resultDiv.className = 'result';
-
-                        // Create a clickable link
-                        const anchor = document.createElement('a');
-                        anchor.href = link;
-                        anchor.textContent = link;
-                        anchor.target = '_blank'; // Open in a new tab
-                        anchor.style.marginRight = '10px';
-
-                        resultDiv.appendChild(anchor);
-
-                        // Append status message
-                        const statusSpan = document.createElement('span');
-                        statusSpan.textContent = `Checking...`;
-                        resultDiv.appendChild(statusSpan);
-
+                        resultDiv.textContent = `Checking: ${link}`;
                         resultsDiv.appendChild(resultDiv);
 
                         // Use fetch to check the URL status
                         fetch(link, { mode: 'no-cors' })
                             .then(() => {
-                                statusSpan.textContent = ` - ✅ Successfully Connected`;
-                                statusSpan.classList.add('success');
+                                resultDiv.textContent = `${link} - ✅ Successfully Connected`;
+                                resultDiv.classList.add('success');
                             })
                             .catch(() => {
-                                statusSpan.textContent = ` - ❌ Failed to Connect`;
-                                statusSpan.classList.add('failure');
+                                resultDiv.textContent = `${link} - ❌ Failed to Connect`;
+                                resultDiv.classList.add('failure');
                             });
                     });
                 }
