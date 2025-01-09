@@ -1,27 +1,3 @@
-name: Update GitHub Pages with URLs
-on:
-  schedule:
-    - cron: "0 * * * *"  # Runs every hour
-  workflow_dispatch:
-
-jobs:
-  update-pages:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'  # Ensure we're using Python 3.x
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
-
       - name: Fetch and parse webpage into HTML
         run: |
           python - <<EOF
@@ -142,16 +118,16 @@ jobs:
                           if li.find('a'):
                               for a in li.find_all('a'):
                                   if a['href'].startswith('http'):
-                                      html_content += f"<li><a href='{a['href']}'>{a['href']}</a></li>"
+                                      html_content += f"<li><a href='{a['href']}' target='_blank'>{a['href']}</a></li>"
                           text_urls = extract_urls_from_text(li.get_text())
                           for url in text_urls:
                               if url not in [a['href'] for a in li.find_all('a')]:  
-                                  html_content += f"<li><a href='{url}'>{url}</a></li>"
+                                  html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
                   
                   elif next_sibling.name == 'p':
                       text_urls = extract_urls_from_text(next_sibling.get_text())
                       for url in text_urls:
-                          html_content += f"<li><a href='{url}'>{url}</a></li>"
+                          html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
                   
                   next_sibling = next_sibling.find_next_sibling()
 
@@ -169,11 +145,3 @@ jobs:
           with open('index.html', 'w', encoding='utf-8') as f:
               f.write(html_content)
           EOF
-
-      - name: Commit and push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Auto-update HTML with extracted URLs and titles"
-          git push
