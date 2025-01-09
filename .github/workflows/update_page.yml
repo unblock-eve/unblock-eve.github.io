@@ -25,6 +25,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
+      # Set current timestamp as environment variable
+      - name: Set last updated timestamp
+        id: timestamp
+        run: echo "LAST_UPDATED=$(date +'%B %d, %Y at %I:%M %p')" >> $GITHUB_ENV
+
       # Fetch and parse webpage into HTML
       - name: Fetch and parse webpage into HTML
         run: |
@@ -34,10 +39,14 @@ jobs:
           from requests.adapters import HTTPAdapter
           from requests.packages.urllib3.util.retry import Retry
           from bs4 import BeautifulSoup
+          from os import environ
 
           def extract_urls_from_text(text):
               url_pattern = r'https?://[^\s<>"\']+'
               return re.findall(url_pattern, text)
+
+          # Get the timestamp from GitHub Actions environment
+          last_updated = environ.get('LAST_UPDATED')
 
           url = "https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
           headers = {
@@ -50,7 +59,7 @@ jobs:
           response = session.get(url, headers=headers)
           soup = BeautifulSoup(response.content, 'html.parser')
 
-          html_content = """
+          html_content = f"""
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -59,16 +68,16 @@ jobs:
               <title>Extracted Proxy Links / RMA</title>
               <link rel="icon" type="image/x-icon" href="favicon.png">
               <style>
-                  body {
+                  body {{
                       font-family: 'Arial', sans-serif;
                       background-color: #121212;
                       color: #f5f5f5;
                       margin: 0;
                       padding: 0;
                       line-height: 1.6;
-                  }
+                  }}
 
-                  .container {
+                  .container {{
                       width: 80%;
                       max-width: 1200px;
                       margin: 30px auto;
@@ -76,66 +85,66 @@ jobs:
                       background-color: #1f1f1f;
                       border-radius: 10px;
                       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-                  }
+                  }}
 
-                  h1 {
+                  h1 {{
                       text-align: center;
                       color: #66ccff;
                       font-size: 36px;
                       margin-bottom: 20px;
-                  }
+                  }}
 
-                  h2 {
+                  h2 {{
                       color: #f5f5f5;
                       font-size: 28px;
                       margin-top: 20px;
                       border-bottom: 2px solid #444;
                       padding-bottom: 10px;
-                  }
+                  }}
 
-                  ul {
+                  ul {{
                       list-style-type: none;
                       padding-left: 0;
                       margin: 20px 0;
-                  }
+                  }}
 
-                  li {
+                  li {{
                       margin: 10px 0;
                       font-size: 18px;
                       line-height: 1.4;
-                  }
+                  }}
 
-                  a {
+                  a {{
                       color: #66ccff;
                       text-decoration: none;
                       transition: color 0.3s ease;
-                  }
+                  }}
 
-                  a:hover {
+                  a:hover {{
                       color: #ff9900;
                       text-decoration: underline;
-                  }
+                  }}
 
-                  p {
+                  p {{
                       font-size: 18px;
                       line-height: 1.6;
                       color: #d0d0d0;
-                  }
+                  }}
 
-                  footer {
+                  footer {{
                       text-align: center;
                       font-size: 14px;
                       color: #888;
                       margin-top: 50px;
-                  }
+                  }}
               </style>
           </head>
           <body>
               <div class="container">
                   <h1>Extracted Links and Titles</h1>
+                  <p><strong>Last updated:</strong> {last_updated}</p>
           """
 
-          # Loop through all h2 elements and extract links
           for h2 in soup.find_all('h2'):
               title = h2.get_text()
               html_content += f"<h2>{title}</h2><ul>"
@@ -171,7 +180,6 @@ jobs:
           </html>
           """
 
-          # Write the HTML content to a file
           with open('index.html', 'w', encoding='utf-8') as f:
               f.write(html_content)
           EOF
