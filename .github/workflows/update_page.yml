@@ -85,7 +85,7 @@ jobs:
                   elif next_sibling.name == 'p':
                       text_urls = extract_urls_from_text(next_sibling.get_text())
                       for url in text_urls:
-                          html_content += f"<li><a href='{url}'>{url}</a></li>"
+                          html_content += "<li><a href='{url}'>{url}</a></li>"
                   
                   next_sibling = next_sibling.find_next_sibling()
               
