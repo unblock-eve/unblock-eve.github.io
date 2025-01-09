@@ -45,6 +45,7 @@ jobs:
           <html>
           <head>
               <title>Extracted Proxy Links / RMA</title>
+               <link rel="icon" type="image/x-icon" href="favicon.png">
               <style>
                   body { font-family: Arial, sans-serif; margin: 20px; background-color: black; color: white;}
                   h1 { color: white; }
@@ -62,7 +63,7 @@ jobs:
 
           for h2 in soup.find_all('h2'):
               title = h2.get_text()
-              html_content += f"<h2>{title}</h2><ul>"
+              html_content += f"<h2>{title}</h2><ul>
               
               next_sibling = h2.find_next_sibling()
               while next_sibling and next_sibling.name in ['ul', 'p']:
