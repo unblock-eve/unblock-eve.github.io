@@ -35,12 +35,13 @@ jobs:
           echo "LAST_UPDATED=$LAST_UPDATED" >> $GITHUB_ENV
           echo "Generated timestamp: $LAST_UPDATED"
 
-      # Fetch and parse webpage into HTML
-      - name: Fetch and parse webpage into HTML
+      # Fetch and parse webpage into HTML and JSON
+      - name: Fetch and parse webpage into HTML and JSON
         run: |
           python - <<EOF
           import requests
           import re
+          import json
           from requests.adapters import HTTPAdapter
           from requests.packages.urllib3.util.retry import Retry
           from bs4 import BeautifulSoup
@@ -64,6 +65,7 @@ jobs:
           response = session.get(url, headers=headers)
           soup = BeautifulSoup(response.content, 'html.parser')
 
+          extracted_data = {}
           html_content = f"""
           <!DOCTYPE html>
           <html lang="en">
@@ -154,6 +156,7 @@ jobs:
               title = h2.get_text()
               html_content += f"<h2>{title}</h2><ul>"
 
+              links = []
               next_sibling = h2.find_next_sibling()
               while next_sibling and next_sibling.name in ['ul', 'p']:
                   if next_sibling.name == 'ul':
@@ -162,18 +165,23 @@ jobs:
                               for a in li.find_all('a'):
                                   if a['href'].startswith('http'):
                                       html_content += f"<li><a href='{a['href']}' target='_blank'>{a['href']}</a></li>"
+                                      links.append(a['href'])
                           text_urls = extract_urls_from_text(li.get_text())
                           for url in text_urls:
-                              if url not in [a['href'] for a in li.find_all('a')]:  
+                              if url not in links:  
                                   html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
+                                  links.append(url)
                   
                   elif next_sibling.name == 'p':
                       text_urls = extract_urls_from_text(next_sibling.get_text())
                       for url in text_urls:
-                          html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
+                          if url not in links:
+                              html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
+                              links.append(url)
                   
                   next_sibling = next_sibling.find_next_sibling()
 
+              extracted_data[title] = links
               html_content += "</ul>"
 
           html_content += """
@@ -185,8 +193,13 @@ jobs:
           </html>
           """
 
+          # Write the HTML content to a file
           with open('index.html', 'w', encoding='utf-8') as f:
               f.write(html_content)
+
+          # Write the extracted data to a JSON file
+          with open('links.json', 'w', encoding='utf-8') as f:
+              json.dump(extracted_data, f, indent=4)
           EOF
 
       # Commit and push changes to the repository
@@ -194,6 +207,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Auto-update HTML with extracted URLs and titles"
+          git add index.html links.json
+          git commit -m "Auto-update HTML and JSON with extracted URLs and titles"
           git push
