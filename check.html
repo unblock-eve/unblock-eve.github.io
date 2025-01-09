@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accurate Link Reachability Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+        }
+        .failure {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Accurate Link Reachability Checker</h1>
+    <div id="results"></div>
+
+    <script>
+        const links = [
+            "https://github.com/unblock-eve/unblock-eve.github.io/edit/main/.github/workflows/update_page.yml",
+            "https://proxies.zapto.org/",
+            "https://roblox.com/",
+	    "https://staticin.pages.dev/",
+	    "https://school.com.apps.dj/"
+        ];
+
+        const resultsDiv = document.getElementById("results");
+
+        links.forEach(link => {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result';
+            resultDiv.textContent = `Checking: ${link}`;
+            resultsDiv.appendChild(resultDiv);
+
+            // Use fetch to check the URL status
+            fetch(link, { mode: 'no-cors' })
+                .then(response => {
+                    // If the fetch doesn't throw, assume it connects successfully
+                    resultDiv.textContent = `${link} - ✅ Successfully Connected`;
+                    resultDiv.classList.add('success');
+                })
+                .catch(error => {
+                    // Catch errors for blocked or unreachable links
+                    resultDiv.textContent = `${link} - ❌ Failed to Connect`;
+                    resultDiv.classList.add('failure');
+                });
+        });
+    </script>
+</body>
+</html>
