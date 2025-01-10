@@ -61,7 +61,16 @@
                         // Use fetch to check the URL status
                         fetch(link, { mode: 'no-cors' })
                             .then(() => {
-                                resultDiv.textContent = `${link} - ✅ Successfully Connected`;
+                                resultDiv.textContent = ''; // Clear the text
+                                
+                                // Create the clickable link
+                                const linkElement = document.createElement('a');
+                                linkElement.href = link;
+                                linkElement.target = "_blank";  // Open in a new tab
+                                linkElement.textContent = link;
+
+                                // Append the clickable link
+                                resultDiv.appendChild(linkElement);
                                 resultDiv.classList.add('success');
                             })
                             .catch(() => {
