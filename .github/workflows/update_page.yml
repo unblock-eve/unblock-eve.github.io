@@ -144,12 +144,33 @@ jobs:
                       color: #888;
                       margin-top: 50px;
                   }}
+
+                  .download-btn {{
+                      display: inline-block;
+                      margin-top: 15px;
+                      padding: 10px 20px;
+                      background-color: #66ccff;
+                      color: white;
+                      border: none;
+                      border-radius: 5px;
+                      cursor: pointer;
+                      text-align: center;
+                      text-decoration: none;
+                  }}
+
+                  .download-btn:hover {{
+                      background-color: #ff9900;
+                  }}
               </style>
           </head>
           <body>
               <div class="container">
                   <h1>Extracted Links and Titles</h1>
                   <p><strong>Last updated:</strong> {last_updated}</p>
+                  <!-- Download Button -->
+                  <a href="check.html" download="check.html" class="download-btn">
+                      Download check.html
+                  </a>
           """
 
           for h2 in soup.find_all('h2'):
