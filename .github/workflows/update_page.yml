@@ -165,7 +165,7 @@ jobs:
           </head>
           <body>
               <div class="container">
-                  <h1>Extracted Links and Titles</h1>
+                  <h1>Pulled Links</h1>
                   <p><strong>Last updated:</strong> {last_updated}</p>
                   <!-- Download Button -->
                   <a href="check.html" download="check.html" class="download-btn">
