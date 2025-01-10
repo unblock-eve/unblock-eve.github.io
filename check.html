@@ -55,6 +55,15 @@
                     links.forEach(link => {
                         const resultDiv = document.createElement('div');
                         resultDiv.className = 'result';
+
+                        // Check for vercel.app domain
+                        if (link.includes('vercel.app')) {
+                            resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
+                            resultDiv.classList.add('failure');
+                            resultsDiv.appendChild(resultDiv);
+                            return;
+                        }
+
                         resultDiv.textContent = `Checking: ${link}`;
                         resultsDiv.appendChild(resultDiv);
 
