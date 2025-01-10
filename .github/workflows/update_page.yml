@@ -169,8 +169,9 @@ jobs:
                   <p><strong>Last updated:</strong> {last_updated}</p>
                   <!-- Download Button -->
                   <a href="check.html" download="check.html" class="download-btn">
-                      Download check.html
+                      Download link checker (open this)
                   </a>
+                  
           """
 
           for h2 in soup.find_all('h2'):
