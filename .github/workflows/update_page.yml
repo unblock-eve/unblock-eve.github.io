@@ -171,6 +171,9 @@ jobs:
                   <a href="check.html" download="check.html" class="download-btn">
                       Download check.html
                   </a>
+                  <a href="links.json" download="links.json" class="download-btn">
+                      Download links.json
+                  </a>
           """
 
           for h2 in soup.find_all('h2'):
