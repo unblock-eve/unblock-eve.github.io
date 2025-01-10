@@ -1,4 +1,5 @@
 name: Update GitHub Pages with URLs
+
 on:
   schedule:
     - cron: "0 * * * *"  # Runs every hour
@@ -13,215 +14,93 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Python environment
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'  # Ensure we're using Python 3.x
-
-      # Install Python dependencies
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
-
       # Set current timestamp in CST timezone
       - name: Set last updated timestamp in CST timezone
         id: timestamp
         run: |
-          # Set the timezone to CST
           export TZ="America/Chicago"
-          LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")  # Format the date in CST
-          echo "LAST_UPDATED=$LAST_UPDATED" >> $GITHUB_ENV
-          echo "Generated timestamp: $LAST_UPDATED"
+          echo "LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")" >> $GITHUB_ENV
 
-      # Fetch and parse webpage into HTML and JSON
-      - name: Fetch and parse webpage into HTML and JSON
+      # Fetch webpage content and build HTML file
+      - name: Generate HTML with Links
         run: |
-          python - <<EOF
-          import requests
-          import re
-          import json
-          from requests.adapters import HTTPAdapter
-          from requests.packages.urllib3.util.retry import Retry
-          from bs4 import BeautifulSoup
-          from os import environ
+          # Define target URL
+          URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
+          LAST_UPDATED="${{ env.LAST_UPDATED }}"
+          
+          # Fetch webpage content
+          RESPONSE=$(curl -s "$URL")
 
-          def extract_urls_from_text(text):
-              url_pattern = r'https?://[^\s<>"\']+'
-              return re.findall(url_pattern, text)
-
-          # Get the timestamp from GitHub Actions environment
-          last_updated = environ.get('LAST_UPDATED')
-
-          url = "https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
-          headers = {
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-          }
-
-          session = requests.Session()
-          retries = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
-          session.mount("https://", HTTPAdapter(max_retries=retries))
-          response = session.get(url, headers=headers)
-          soup = BeautifulSoup(response.content, 'html.parser')
-
-          extracted_data = {}
-          html_content = f"""
+          # Build HTML content
+          cat <<EOF > index.html
           <!DOCTYPE html>
           <html lang="en">
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Extracted Proxy Links / RMA</title>
-              <link rel="icon" type="image/x-icon" href="favicon.png">
+              <title>Generated Links</title>
               <style>
-                  body {{
-                      font-family: 'Arial', sans-serif;
+                  body {
+                      font-family: Arial, sans-serif;
                       background-color: #121212;
                       color: #f5f5f5;
-                      margin: 0;
-                      padding: 0;
                       line-height: 1.6;
-                  }}
-
-                  .container {{
-                      width: 80%;
-                      max-width: 1200px;
-                      margin: 30px auto;
+                      margin: 0;
                       padding: 20px;
-                      background-color: #1f1f1f;
+                  }
+                  .container {
+                      max-width: 800px;
+                      margin: auto;
+                      padding: 20px;
+                      background: #1f1f1f;
                       border-radius: 10px;
-                      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-                  }}
-
-                  h1 {{
-                      text-align: center;
-                      color: #66ccff;
-                      font-size: 36px;
-                      margin-bottom: 20px;
-                  }}
-
-                  h2 {{
-                      color: #f5f5f5;
-                      font-size: 28px;
-                      margin-top: 20px;
-                      border-bottom: 2px solid #444;
-                      padding-bottom: 10px;
-                  }}
-
-                  ul {{
-                      list-style-type: none;
-                      padding-left: 0;
-                      margin: 20px 0;
-                  }}
-
-                  li {{
-                      margin: 10px 0;
-                      font-size: 18px;
-                      line-height: 1.4;
-                  }}
-
-                  a {{
+                      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+                  }
+                  a {
                       color: #66ccff;
                       text-decoration: none;
-                      transition: color 0.3s ease;
-                  }}
-
-                  a:hover {{
+                  }
+                  a:hover {
                       color: #ff9900;
-                      text-decoration: underline;
-                  }}
-
-                  p {{
-                      font-size: 18px;
-                      line-height: 1.6;
-                      color: #d0d0d0;
-                  }}
-
-                  footer {{
-                      text-align: center;
-                      font-size: 14px;
-                      color: #888;
-                      margin-top: 50px;
-                  }}
-
-                  .download-btn {{
+                  }
+                  .button {
                       display: inline-block;
-                      margin-top: 15px;
                       padding: 10px 20px;
                       background-color: #66ccff;
                       color: white;
-                      border: none;
                       border-radius: 5px;
-                      cursor: pointer;
-                      text-align: center;
                       text-decoration: none;
-                  }}
-
-                  .download-btn:hover {{
+                      margin-top: 10px;
+                  }
+                  .button:hover {
                       background-color: #ff9900;
-                  }}
+                  }
               </style>
           </head>
           <body>
               <div class="container">
-                  <h1>Pulled Links</h1>
-                  <p><strong>Last updated:</strong> {last_updated}</p>
-                  <!-- Download Button -->
-                  <a href="check.html" download="check.html" class="download-btn">
-                      Download link checker (open this)
-                  </a>
-                  
-          """
-
-          for h2 in soup.find_all('h2'):
-              title = h2.get_text()
-              html_content += f"<h2>{title}</h2><ul>"
-
-              links = []
-              next_sibling = h2.find_next_sibling()
-              while next_sibling and next_sibling.name in ['ul', 'p']:
-                  if next_sibling.name == 'ul':
-                      for li in next_sibling.find_all('li'):
-                          if li.find('a'):
-                              for a in li.find_all('a'):
-                                  if a['href'].startswith('http'):
-                                      html_content += f"<li><a href='{a['href']}' target='_blank'>{a['href']}</a></li>"
-                                      links.append(a['href'])
-                          text_urls = extract_urls_from_text(li.get_text())
-                          for url in text_urls:
-                              if url not in links:  
-                                  html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
-                                  links.append(url)
-                  
-                  elif next_sibling.name == 'p':
-                      text_urls = extract_urls_from_text(next_sibling.get_text())
-                      for url in text_urls:
-                          if url not in links:
-                              html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
-                              links.append(url)
-                  
-                  next_sibling = next_sibling.find_next_sibling()
-
-              extracted_data[title] = links
-              html_content += "</ul>"
-
-          html_content += """
+                  <h1>Auto-Generated Links</h1>
+                  <p><strong>Last Updated:</strong> $LAST_UPDATED</p>
+                  <p>
+                      <button class="button" id="fetchContentButton">Open Check.html</button>
+                  </p>
               </div>
-              <footer>
-                  <p>Generated by GitHub Actions - Auto-update with extracted links</p>
-              </footer>
+              <script>
+                  document.getElementById('fetchContentButton').addEventListener('click', () => {
+                      const htmlContentUrl = 'https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/check.html';
+                      fetch(htmlContentUrl)
+                          .then(response => response.text())
+                          .then(content => {
+                              const newTab = window.open();
+                              newTab.document.open();
+                              newTab.document.write(content);
+                              newTab.document.close();
+                          })
+                          .catch(err => alert('Failed to fetch the content!'));
+                  });
+              </script>
           </body>
           </html>
-          """
-
-          # Write the HTML content to a file
-          with open('index.html', 'w', encoding='utf-8') as f:
-              f.write(html_content)
-
-          # Write the extracted data to a JSON file
-          with open('links.json', 'w', encoding='utf-8') as f:
-              json.dump(extracted_data, f, indent=4)
           EOF
 
       # Commit and push changes to the repository
@@ -229,6 +108,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html links.json
-          git commit -m "Auto-update HTML and JSON with extracted URLs and titles"
+          git add index.html
+          git commit -m "Auto-update HTML with fetch button"
           git push
