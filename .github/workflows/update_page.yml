@@ -38,7 +38,7 @@ jobs:
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Generated Links</title>
+              <title>Links</title>
               <style>
                   body {
                       font-family: Arial, sans-serif;
@@ -79,10 +79,10 @@ jobs:
           </head>
           <body>
               <div class="container">
-                  <h1>Auto-Generated Links</h1>
+                  <h1>Links</h1>
                   <p><strong>Last Updated:</strong> $LAST_UPDATED</p>
                   <p>
-                      <button class="button" id="fetchContentButton">Open Check.html</button>
+                      <button class="button" id="fetchContentButton">Open links with checker</button>
                   </p>
               </div>
               <script>
