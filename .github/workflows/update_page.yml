@@ -9,33 +9,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository to access files
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Ensure we're using Python 3.x
+          python-version: '3.x'
 
-      # Install Python dependencies
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
 
-      # Set current timestamp in CST timezone
       - name: Set last updated timestamp in CST timezone
         id: timestamp
         run: |
-          # Set the timezone to CST
           export TZ="America/Chicago"
-          LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")  # Format the date in CST
+          LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")
           echo "LAST_UPDATED=$LAST_UPDATED" >> $GITHUB_ENV
           echo "Generated timestamp: $LAST_UPDATED"
 
-      # Fetch and parse webpage into HTML and JSON
       - name: Fetch and parse webpage into HTML and JSON
         run: |
           python - <<EOF
@@ -51,7 +45,6 @@ jobs:
               url_pattern = r'https?://[^\s<>"\']+'
               return re.findall(url_pattern, text)
 
-          # Get the timestamp from GitHub Actions environment
           last_updated = environ.get('LAST_UPDATED')
 
           url = "https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
@@ -72,137 +65,116 @@ jobs:
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Extracted Proxy Links / RMA</title>
-              <link rel="icon" type="image/x-icon" href="favicon.png">
+              <title>Accurate Link Reachability Checker</title>
               <style>
                   body {{
-                      font-family: 'Arial', sans-serif;
-                      background-color: #121212;
-                      color: #f5f5f5;
-                      margin: 0;
-                      padding: 0;
-                      line-height: 1.6;
+                      font-family: Arial, sans-serif;
+                      margin: 20px;
                   }}
-
-                  .container {{
-                      width: 80%;
-                      max-width: 1200px;
-                      margin: 30px auto;
-                      padding: 20px;
-                      background-color: #1f1f1f;
-                      border-radius: 10px;
-                      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-                  }}
-
                   h1 {{
                       text-align: center;
-                      color: #66ccff;
-                      font-size: 36px;
-                      margin-bottom: 20px;
                   }}
-
-                  h2 {{
-                      color: #f5f5f5;
-                      font-size: 28px;
-                      margin-top: 20px;
-                      border-bottom: 2px solid #444;
-                      padding-bottom: 10px;
-                  }}
-
-                  ul {{
-                      list-style-type: none;
-                      padding-left: 0;
-                      margin: 20px 0;
-                  }}
-
-                  li {{
+                  .result {{
                       margin: 10px 0;
-                      font-size: 18px;
-                      line-height: 1.4;
+                      padding: 10px;
+                      border: 1px solid #ccc;
+                      border-radius: 5px;
                   }}
-
-                  a {{
-                      color: #66ccff;
-                      text-decoration: none;
-                      transition: color 0.3s ease;
+                  .success {{
+                      color: green;
                   }}
-
-                  a:hover {{
-                      color: #ff9900;
-                      text-decoration: underline;
+                  .failure {{
+                      color: red;
                   }}
-
-                  p {{
-                      font-size: 18px;
-                      line-height: 1.6;
-                      color: #d0d0d0;
+                  .title {{
+                      font-weight: bold;
+                      margin-top: 20px;
                   }}
-
-                  footer {{
+                  .download-btn {{
+                      display: block;
+                      width: 200px;
+                      margin: 20px auto;
+                      padding: 10px;
                       text-align: center;
-                      font-size: 14px;
-                      color: #888;
-                      margin-top: 50px;
+                      background-color: #66ccff;
+                      color: #fff;
+                      font-size: 18px;
+                      border-radius: 5px;
+                      text-decoration: none;
+                      transition: background-color 0.3s ease;
+                  }}
+                  .download-btn:hover {{
+                      background-color: #ff9900;
                   }}
               </style>
           </head>
           <body>
-              <div class="container">
-                  <h1>Extracted Links and Titles</h1>
-                  <p><strong>Last updated:</strong> {last_updated}</p>
-          """
+              <h1>Accurate Link Reachability Checker</h1>
+              <div id="results"></div>
+              <!-- Add download button here -->
+              <a href="index.html" class="download-btn" download="index.html">Download this page</a>
 
-          for h2 in soup.find_all('h2'):
-              title = h2.get_text()
-              html_content += f"<h2>{title}</h2><ul>"
+              <script>
+                  fetch('links.json')
+                      .then(response => {
+                          if (!response.ok) {{
+                              throw new Error(`Failed to load links.json: ${{
+                                  response.statusText
+                              }}`);
+                          }}
+                          return response.json();
+                      }})
+                      .then(data => {{
+                          const resultsDiv = document.getElementById('results');
+                          for (const [title, links] of Object.entries(data)) {{
+                              const titleDiv = document.createElement('div');
+                              titleDiv.className = 'title';
+                              titleDiv.textContent = `Category: ${{
+                                  title
+                              }}`;
+                              resultsDiv.appendChild(titleDiv);
+                              links.forEach(link => {{
+                                  const resultDiv = document.createElement('div');
+                                  resultDiv.className = 'result';
+                                  resultDiv.textContent = `Checking: ${{
+                                      link
+                                  }}`;
+                                  resultsDiv.appendChild(resultDiv);
 
-              links = []
-              next_sibling = h2.find_next_sibling()
-              while next_sibling and next_sibling.name in ['ul', 'p']:
-                  if next_sibling.name == 'ul':
-                      for li in next_sibling.find_all('li'):
-                          if li.find('a'):
-                              for a in li.find_all('a'):
-                                  if a['href'].startswith('http'):
-                                      html_content += f"<li><a href='{a['href']}' target='_blank'>{a['href']}</a></li>"
-                                      links.append(a['href'])
-                          text_urls = extract_urls_from_text(li.get_text())
-                          for url in text_urls:
-                              if url not in links:  
-                                  html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
-                                  links.append(url)
-                  
-                  elif next_sibling.name == 'p':
-                      text_urls = extract_urls_from_text(next_sibling.get_text())
-                      for url in text_urls:
-                          if url not in links:
-                              html_content += f"<li><a href='{url}' target='_blank'>{url}</a></li>"
-                              links.append(url)
-                  
-                  next_sibling = next_sibling.find_next_sibling()
-
-              extracted_data[title] = links
-              html_content += "</ul>"
-
-          html_content += """
-              </div>
-              <footer>
-                  <p>Generated by GitHub Actions - Auto-update with extracted links</p>
-              </footer>
+                                  fetch(link, {{ mode: 'no-cors' }})
+                                      .then(() => {{
+                                          resultDiv.textContent = `${{
+                                              link
+                                          }} - ✅ Successfully Connected`;
+                                          resultDiv.classList.add('success');
+                                      }})
+                                      .catch(() => {{
+                                          resultDiv.textContent = `${{
+                                              link
+                                          }} - ❌ Failed to Connect`;
+                                          resultDiv.classList.add('failure');
+                                      }});
+                              }});
+                          }}
+                      }})
+                      .catch(error => {{
+                          const resultsDiv = document.getElementById('results');
+                          resultsDiv.textContent = `Error: ${{
+                              error.message
+                          }}`;
+                      }});
+              </script>
           </body>
           </html>
           """
 
-          # Write the HTML content to a file
           with open('index.html', 'w', encoding='utf-8') as f:
               f.write(html_content)
 
-          # Write the extracted data to a JSON file
           with open('links.json', 'w', encoding='utf-8') as f:
               json.dump(extracted_data, f, indent=4)
           EOF
 
-      # Commit and push changes to the repository
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
