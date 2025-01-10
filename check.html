@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Checker</title>
+    <title>Accurate Link Checker / RMA</title>
     <style>
-        /* General body styling */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -15,7 +14,6 @@
             line-height: 1.6;
         }
 
-        /* Header styling */
         header {
             background-color: #1f1f1f;
             padding: 20px 0;
@@ -26,7 +24,6 @@
             border-bottom: 1px solid #333;
         }
 
-        /* Main container styling */
         .container {
             max-width: 800px;
             margin: 30px auto;
@@ -36,7 +33,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
-        /* Section title styling */
         .title {
             font-size: 1.4rem;
             margin: 20px 0 10px;
@@ -45,7 +41,6 @@
             padding-bottom: 5px;
         }
 
-        /* Styling for results */
         .result {
             margin: 10px 0;
             padding: 12px;
@@ -54,29 +49,28 @@
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Success and failure results */
         .success {
             background-color: #1d2b1d;
             border-color: #4caf50;
             color: #4caf50;
         }
+
         .failure {
             background-color: #2b1d1d;
             border-color: #f44336;
             color: #f44336;
         }
 
-        /* Link styling */
         a {
             color: #00bcd4;
             text-decoration: none;
             font-weight: bold;
         }
+
         a:hover {
             text-decoration: underline;
         }
 
-        /* Footer styling */
         footer {
             text-align: center;
             padding: 15px 0;
@@ -99,7 +93,6 @@
     </footer>
 
     <script>
-        // Fetch the links.json file
         fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
             .then(response => {
                 if (!response.ok) {
@@ -111,12 +104,23 @@
                 const resultsDiv = document.getElementById('results');
                 
                 for (const [title, links] of Object.entries(data)) {
+                    // Skip "Category: Table of Contents"
+                    if (title === "Table of Contents") continue;
+
+                    // Filter out YouTube links
+                    const validLinks = links.filter(link => !link.includes('youtube.com'));
+
+                    // Skip empty categories
+                    if (validLinks.length === 0) continue;
+
+                    // Create a category title
                     const titleDiv = document.createElement('div');
                     titleDiv.className = 'title';
                     titleDiv.textContent = `Category: ${title}`;
                     resultsDiv.appendChild(titleDiv);
 
-                    links.forEach(link => {
+                    // Display valid links
+                    validLinks.forEach(link => {
                         const resultDiv = document.createElement('div');
                         resultDiv.className = 'result';
 
@@ -131,18 +135,18 @@
                         resultDiv.textContent = `Checking: ${link}`;
                         resultsDiv.appendChild(resultDiv);
 
-                        // Use fetch to check the URL status
+                        // Check link status
                         fetch(link, { mode: 'no-cors' })
                             .then(() => {
                                 resultDiv.textContent = ''; // Clear the text
                                 
-                                // Create the clickable link
+                                // Create a clickable link
                                 const linkElement = document.createElement('a');
                                 linkElement.href = link;
-                                linkElement.target = "_blank";  // Open in a new tab
+                                linkElement.target = "_blank";
                                 linkElement.textContent = link;
 
-                                // Append the clickable link
+                                // Append link to the result
                                 resultDiv.appendChild(linkElement);
                                 resultDiv.classList.add('success');
                             })
