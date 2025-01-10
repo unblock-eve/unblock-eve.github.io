@@ -45,6 +45,7 @@ jobs:
               url_pattern = r'https?://[^\s<>"\']+'
               return re.findall(url_pattern, text)
 
+          # Get the timestamp from GitHub Actions environment
           last_updated = environ.get('LAST_UPDATED')
 
           url = "https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
@@ -56,6 +57,11 @@ jobs:
           retries = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
           session.mount("https://", HTTPAdapter(max_retries=retries))
           response = session.get(url, headers=headers)
+
+          if response.status_code != 200:
+              print(f"Error fetching the URL: {url} with status code {response.status_code}")
+              exit(1)
+
           soup = BeautifulSoup(response.content, 'html.parser')
 
           extracted_data = {}
@@ -116,11 +122,9 @@ jobs:
 
               <script>
                   fetch('links.json')
-                      .then(response => {
+                      .then(response => {{
                           if (!response.ok) {{
-                              throw new Error(`Failed to load links.json: ${{
-                                  response.statusText
-                              }}`);
+                              throw new Error('Failed to load links.json');
                           }}
                           return response.json();
                       }})
