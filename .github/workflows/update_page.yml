@@ -1,475 +1,236 @@
-All collection items must start at the same column (1:1)
->  1 | name: Update GitHub Pages with URLs
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->  2 | on:
-     | ^^^
->  3 |   schedule:
-     | ^^^
->  4 |     - cron: "0 * * * *"  # Runs every hour
-     | ^^^
->  5 |   workflow_dispatch:
-     | ^^^
->  6 |
-     | ^^^
->  7 | jobs:
-     | ^^^
->  8 |   update-pages:
-     | ^^^
->  9 |     runs-on: ubuntu-latest
-     | ^^^
->  10 |
-      | ^^^
->  11 |     steps:
-      | ^^^
->  12 |       # Checkout repository to access files
-      | ^^^
->  13 |       - name: Checkout repository
-      | ^^^
->  14 |         uses: actions/checkout@v3
-      | ^^^
->  15 |
-      | ^^^
->  16 |       # Set current timestamp in CST timezone
-      | ^^^
->  17 |       - name: Set last updated timestamp in CST timezone
-      | ^^^
->  18 |         id: timestamp
-      | ^^^
->  19 |         run: |
-      | ^^^
->  20 |           export TZ="America/Chicago"
-      | ^^^
->  21 |           echo "LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")" >> $GITHUB_ENV
-      | ^^^
->  22 |
-      | ^^^
->  23 |       # Generate HTML file with embedded "check.html" content
-      | ^^^
->  24 |       - name: Generate HTML file with embedded local content
-      | ^^^
->  25 |         run: |
-      | ^^^
->  26 |           LAST_UPDATED="${{ env.LAST_UPDATED }}"
-      | ^^^
->  27 |           
-      | ^^^
->  28 |           # Simulated content for check.html
-      | ^^^
->  29 |           CHECK_HTML_CONTENT=$(cat <<'EOF'
-      | ^^^
->  30 | <!DOCTYPE html>
-      | ^^^
->  31 | <html lang="en">
-      | ^^^
->  32 | <head>
-      | ^^^
->  33 |     <meta charset="UTF-8">
-      | ^^^
->  34 |     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      | ^^^
->  35 |     <title>Link Checker / RMA</title>
-      | ^^^
->  36 |     <style>
-      | ^^^
->  37 |         body {
-      | ^^^
->  38 |             font-family: Arial, sans-serif;
-      | ^^^
->  39 |             background-color: #121212;
-      | ^^^
->  40 |             color: #e0e0e0;
-      | ^^^
->  41 |             margin: 0;
-      | ^^^
->  42 |             padding: 0;
-      | ^^^
->  43 |             line-height: 1.6;
-      | ^^^
->  44 |         }
-      | ^^^
->  45 |         header {
-      | ^^^
->  46 |             background-color: #1f1f1f;
-      | ^^^
->  47 |             padding: 20px 0;
-      | ^^^
->  48 |             text-align: center;
-      | ^^^
->  49 |             color: #ffffff;
-      | ^^^
->  50 |             font-size: 1.8rem;
-      | ^^^
->  51 |             font-weight: bold;
-      | ^^^
->  52 |             border-bottom: 1px solid #333;
-      | ^^^
->  53 |         }
-      | ^^^
->  54 |         .container {
-      | ^^^
->  55 |             max-width: 800px;
-      | ^^^
->  56 |             margin: 30px auto;
-      | ^^^
->  57 |             padding: 20px;
-      | ^^^
->  58 |             background-color: #1a1a1a;
-      | ^^^
->  59 |             border-radius: 8px;
-      | ^^^
->  60 |             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      | ^^^
->  61 |         }
-      | ^^^
->  62 |         .title {
-      | ^^^
->  63 |             font-size: 1.4rem;
-      | ^^^
->  64 |             margin: 20px 0 10px;
-      | ^^^
->  65 |             color: #00bcd4;
-      | ^^^
->  66 |             border-bottom: 1px solid #333;
-      | ^^^
->  67 |             padding-bottom: 5px;
-      | ^^^
->  68 |         }
-      | ^^^
->  69 |         .result {
-      | ^^^
->  70 |             margin: 10px 0;
-      | ^^^
->  71 |             padding: 12px;
-      | ^^^
->  72 |             border-radius: 5px;
-      | ^^^
->  73 |             border: 1px solid #333;
-      | ^^^
->  74 |             transition: background-color 0.3s ease, border-color 0.3s ease;
-      | ^^^
->  75 |         }
-      | ^^^
->  76 |         .success {
-      | ^^^
->  77 |             background-color: #1d2b1d;
-      | ^^^
->  78 |             border-color: #4caf50;
-      | ^^^
->  79 |             color: #4caf50;
-      | ^^^
->  80 |         }
-      | ^^^
->  81 |         .failure {
-      | ^^^
->  82 |             background-color: #2b1d1d;
-      | ^^^
->  83 |             border-color: #f44336;
-      | ^^^
->  84 |             color: #f44336;
-      | ^^^
->  85 |         }
-      | ^^^
->  86 |         a {
-      | ^^^
->  87 |             color: #00bcd4;
-      | ^^^
->  88 |             text-decoration: none;
-      | ^^^
->  89 |             font-weight: bold;
-      | ^^^
->  90 |         }
-      | ^^^
->  91 |         a:hover {
-      | ^^^
->  92 |             text-decoration: underline;
-      | ^^^
->  93 |         }
-      | ^^^
->  94 |         footer {
-      | ^^^
->  95 |             text-align: center;
-      | ^^^
->  96 |             padding: 15px 0;
-      | ^^^
->  97 |             font-size: 0.9rem;
-      | ^^^
->  98 |             color: #888;
-      | ^^^
->  99 |             background-color: #1f1f1f;
-      | ^^^
-> 100 |             border-top: 1px solid #333;
-      | ^^^
-> 101 |         }
-      | ^^^
-> 102 |     </style>
-      | ^^^
-> 103 | </head>
-      | ^^^
-> 104 | <body>
-      | ^^^
-> 105 |     <header>
-      | ^^^
-> 106 |         Link Checker
-      | ^^^
-> 107 |     </header>
-      | ^^^
-> 108 |     <div class="container">
-      | ^^^
-> 109 |         <div id="results"></div>
-      | ^^^
-> 110 |     </div>
-      | ^^^
-> 111 |     <footer>
-      | ^^^
-> 112 |         &copy; 2025 | Minimalist Black Theme | Powered by GitHub Actions
-      | ^^^
-> 113 |     </footer>
-      | ^^^
-> 114 |     <script>
-      | ^^^
-> 115 |         fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
-      | ^^^
-> 116 |             .then(response => {
-      | ^^^
-> 117 |                 if (!response.ok) {
-      | ^^^
-> 118 |                     throw new Error(`Failed to load links.json: ${response.statusText}`);
-      | ^^^
-> 119 |                 }
-      | ^^^
-> 120 |                 return response.json();
-      | ^^^
-> 121 |             })
-      | ^^^
-> 122 |             .then(data => {
-      | ^^^
-> 123 |                 const resultsDiv = document.getElementById('results');
-      | ^^^
-> 124 |                 for (const [title, links] of Object.entries(data)) {
-      | ^^^
-> 125 |                     if (title === "Table of Contents") continue;
-      | ^^^
-> 126 |                     const validLinks = links.filter(link => !link.includes('youtube.com'));
-      | ^^^
-> 127 |                     if (validLinks.length === 0) continue;
-      | ^^^
-> 128 |                     const titleDiv = document.createElement('div');
-      | ^^^
-> 129 |                     titleDiv.className = 'title';
-      | ^^^
-> 130 |                     titleDiv.textContent = `Category: ${title}`;
-      | ^^^
-> 131 |                     resultsDiv.appendChild(titleDiv);
-      | ^^^
-> 132 |                     validLinks.forEach(link => {
-      | ^^^
-> 133 |                         const resultDiv = document.createElement('div');
-      | ^^^
-> 134 |                         resultDiv.className = 'result';
-      | ^^^
-> 135 |                         if (link.includes('vercel.app')) {
-      | ^^^
-> 136 |                             resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
-      | ^^^
-> 137 |                             resultDiv.classList.add('failure');
-      | ^^^
-> 138 |                             resultsDiv.appendChild(resultDiv);
-      | ^^^
-> 139 |                             return;
-      | ^^^
-> 140 |                         }
-      | ^^^
-> 141 |                         resultDiv.textContent = `Checking: ${link}`;
-      | ^^^
-> 142 |                         resultsDiv.appendChild(resultDiv);
-      | ^^^
-> 143 |                         fetch(link, { mode: 'no-cors' })
-      | ^^^
-> 144 |                             .then(() => {
-      | ^^^
-> 145 |                                 resultDiv.textContent = '';
-      | ^^^
-> 146 |                                 const linkElement = document.createElement('a');
-      | ^^^
-> 147 |                                 linkElement.href = link;
-      | ^^^
-> 148 |                                 linkElement.target = "_blank";
-      | ^^^
-> 149 |                                 linkElement.textContent = link;
-      | ^^^
-> 150 |                                 resultDiv.appendChild(linkElement);
-      | ^^^
-> 151 |                                 resultDiv.classList.add('success');
-      | ^^^
-> 152 |                             })
-      | ^^^
-> 153 |                             .catch(() => {
-      | ^^^
-> 154 |                                 resultDiv.textContent = `${link} - ❌ Fail`;
-      | ^^^
-> 155 |                                 resultDiv.classList.add('failure');
-      | ^^^
-> 156 |                             });
-      | ^^^
-> 157 |                     });
-      | ^^^
-> 158 |                 }
-      | ^^^
-> 159 |             })
-      | ^^^
-> 160 |             .catch(error => {
-      | ^^^
-> 161 |                 const resultsDiv = document.getElementById('results');
-      | ^^^
-> 162 |                 resultsDiv.textContent = `Error: ${error.message}`;
-      | ^^^
-> 163 |             });
-      | ^^^
-> 164 |     </script>
-      | ^^^
-> 165 | </body>
-      | ^^^
-> 166 | </html>
-      | ^^^
-> 167 |           EOF
-      | ^^^
-> 168 |           )
-      | ^^^
-> 169 |
-      | ^^^
-> 170 |           # Main index.html with embedded local content
-      | ^^^
-> 171 |           cat <<EOF > index.html
-      | ^^^
-> 172 |           <!DOCTYPE html>
-      | ^^^
-> 173 |           <html lang="en">
-      | ^^^
-> 174 |           <head>
-      | ^^^
-> 175 |               <meta charset="UTF-8">
-      | ^^^
-> 176 |               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      | ^^^
-> 177 |               <title>Extracted Proxy Links</title>
-      | ^^^
-> 178 |               <style>
-      | ^^^
-> 179 |                   body {
-      | ^^^
-> 180 |                       font-family: Arial, sans-serif;
-      | ^^^
-> 181 |                       background-color: #121212;
-      | ^^^
-> 182 |                       color: #f5f5f5;
-      | ^^^
-> 183 |                       margin: 0;
-      | ^^^
-> 184 |                       padding: 0;
-      | ^^^
-> 185 |                   }
-      | ^^^
-> 186 |                   .container {
-      | ^^^
-> 187 |                       width: 80%;
-      | ^^^
-> 188 |                       margin: 30px auto;
-      | ^^^
-> 189 |                       padding: 20px;
-      | ^^^
-> 190 |                       background-color: #1f1f1f;
-      | ^^^
-> 191 |                       border-radius: 10px;
-      | ^^^
-> 192 |                   }
-      | ^^^
-> 193 |                   .toggle-btn {
-      | ^^^
-> 194 |                       display: inline-block;
-      | ^^^
-> 195 |                       padding: 10px 20px;
-      | ^^^
-> 196 |                       background-color: #66ccff;
-      | ^^^
-> 197 |                       color: white;
-      | ^^^
-> 198 |                       border-radius: 5px;
-      | ^^^
-> 199 |                       text-decoration: none;
-      | ^^^
-> 200 |                       cursor: pointer;
-      | ^^^
-> 201 |                   }
-      | ^^^
-> 202 |                   .toggle-btn:hover {
-      | ^^^
-> 203 |                       background-color: #ff9900;
-      | ^^^
-> 204 |                   }
-      | ^^^
-> 205 |                   .hidden {
-      | ^^^
-> 206 |                       display: none;
-      | ^^^
-> 207 |                   }
-      | ^^^
-> 208 |               </style>
-      | ^^^
-> 209 |               <script>
-      | ^^^
-> 210 |                   function toggleCheckHtml() {
-      | ^^^
-> 211 |                       const checkHtmlDiv = document.getElementById('check-html-content');
-      | ^^^
-> 212 |                       checkHtmlDiv.classList.toggle('hidden');
-      | ^^^
-> 213 |                   }
-      | ^^^
-> 214 |               </script>
-      | ^^^
-> 215 |           </head>
-      | ^^^
-> 216 |           <body>
-      | ^^^
-> 217 |               <div class="container">
-      | ^^^
-> 218 |                   <h1>Extracted Proxy Links</h1>
-      | ^^^
-> 219 |                   <p><strong>Last Updated:</strong> $LAST_UPDATED</p>
-      | ^^^
-> 220 |                   <button class="toggle-btn" onclick="toggleCheckHtml()">Open Link Checker Tool</button>
-      | ^^^
-> 221 |                   <div id="check-html-content" class="hidden">
-      | ^^^
-> 222 |                       $CHECK_HTML_CONTENT
-      | ^^^
-> 223 |                   </div>
-      | ^^^
-> 224 |               </div>
-      | ^^^
-> 225 |           </body>
-      | ^^^
-> 226 |           </html>
-      | ^^^
-> 227 |           EOF
-      | ^^^
-> 228 |
-      | ^^^
-> 229 |       # Commit and push changes to the repository
-      | ^^^
-> 230 |       - name: Commit and push changes
-      | ^^^
-> 231 |         run: |
-      | ^^^
-> 232 |           git config user.name "github-actions[bot]"
-      | ^^^
-> 233 |           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      | ^^^
-> 234 |           git add index.html
-      | ^^^
-> 235 |           git commit -m "Embed local link checker tool in the main HTML"
-      | ^^^
-> 236 |           git push
-      | ^^^
-> 237 |
-      | ^
+name: Update GitHub Pages with URLs
+on:
+  schedule:
+    - cron: "0 * * * *"  # Runs every hour
+  workflow_dispatch:
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository to access files
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set current timestamp in CST timezone
+      - name: Set last updated timestamp in CST timezone
+        id: timestamp
+        run: |
+          export TZ="America/Chicago"
+          echo "LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")" >> $GITHUB_ENV
+
+      # Generate HTML file with embedded "check.html" content
+      - name: Generate HTML file with embedded local content
+        run: |
+          LAST_UPDATED="${{ env.LAST_UPDATED }}"
+          
+          # Simulated content for check.html
+          CHECK_HTML_CONTENT=$(cat <<'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Checker / RMA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #1f1f1f;
+            padding: 20px 0;
+            text-align: center;
+            color: #ffffff;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .title {
+            font-size: 1.4rem;
+            margin: 20px 0 10px;
+            color: #00bcd4;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .success {
+            background-color: #1d2b1d;
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+        .failure {
+            background-color: #2b1d1d;
+            border-color: #f44336;
+            color: #f44336;
+        }
+        a {
+            color: #00bcd4;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 0.9rem;
+            color: #888;
+            background-color: #1f1f1f;
+            border-top: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Link Checker
+    </header>
+    <div class="container">
+        <div id="results"></div>
+    </div>
+    <footer>
+        &copy; 2025 | Minimalist Black Theme | Powered by GitHub Actions
+    </footer>
+    <script>
+        fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load links.json: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                for (const [title, links] of Object.entries(data)) {
+                    if (title === "Table of Contents") continue;
+                    const validLinks = links.filter(link => !link.includes('youtube.com'));
+                    if (validLinks.length === 0) continue;
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'title';
+                    titleDiv.textContent = `Category: ${title}`;
+                    resultsDiv.appendChild(titleDiv);
+                    validLinks.forEach(link => {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'result';
+                        if (link.includes('vercel.app')) {
+                            resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
+                            resultDiv.classList.add('failure');
+                            resultsDiv.appendChild(resultDiv);
+                            return;
+                        }
+                        resultDiv.textContent = `Checking: ${link}`;
+                        resultsDiv.appendChild(resultDiv);
+                        fetch(link, { mode: 'no-cors' })
+                            .then(() => {
+                                resultDiv.textContent = '';
+                                const linkElement = document.createElement('a');
+                                linkElement.href = link;
+                                linkElement.target = "_blank";
+                                linkElement.textContent = link;
+                                resultDiv.appendChild(linkElement);
+                                resultDiv.classList.add('success');
+                            })
+                            .catch(() => {
+                                resultDiv.textContent = `${link} - ❌ Fail`;
+                                resultDiv.classList.add('failure');
+                            });
+                    });
+                }
+            })
+            .catch(error => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.textContent = `Error: ${error.message}`;
+            });
+    </script>
+</body>
+</html>
+          EOF
+          )
+
+          # Main index.html with embedded local content
+          cat <<EOF > index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Extracted Proxy Links</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      background-color: #121212;
+                      color: #f5f5f5;
+                      margin: 0;
+                      padding: 0;
+                  }
+                  .container {
+                      width: 80%;
+                      margin: 30px auto;
+                      padding: 20px;
+                      background-color: #1f1f1f;
+                      border-radius: 10px;
+                  }
+                  .toggle-btn {
+                      display: inline-block;
+                      padding: 10px 20px;
+                      background-color: #66ccff;
+                      color: white;
+                      border-radius: 5px;
+                      text-decoration: none;
+                      cursor: pointer;
+                  }
+                  .toggle-btn:hover {
+                      background-color: #ff9900;
+                  }
+                  .hidden {
+                      display: none;
+                  }
+              </style>
+              <script>
+                  function toggleCheckHtml() {
+                      const checkHtmlDiv = document.getElementById('check-html-content');
+                      checkHtmlDiv.classList.toggle('hidden');
+                  }
+              </script>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Extracted Proxy Links</h1>
+                  <p><strong>Last Updated:</strong> $LAST_UPDATED</p>
+                  <button class="toggle-btn" onclick="toggleCheckHtml()">Open Link Checker Tool</button>
+                  <div id="check-html-content" class="hidden">
+                      $CHECK_HTML_CONTENT
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      # Commit and push changes to the repository
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Embed local link checker tool in the main HTML"
+          git push
