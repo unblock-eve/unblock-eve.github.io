@@ -20,13 +20,23 @@ jobs:
           export TZ="America/Chicago"
           echo "LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")" >> $GITHUB_ENV
 
-      # Fetch and parse webpage into HTML and JSON
-      - name: Fetch and parse webpage into HTML and JSON
+      # Generate HTML file with embedded "check.html" content
+      - name: Generate HTML file with embedded local content
         run: |
-          # Define last updated timestamp
           LAST_UPDATED="${{ env.LAST_UPDATED }}"
           
-          # Generate HTML content with the corrected <a> tag
+          # Simulated content for check.html
+          CHECK_HTML_CONTENT=$(cat <<'EOF'
+          <h2>Link Checker Tool</h2>
+          <p>This is a simulated version of the local tool.</p>
+          <ul>
+              <li>Test Link 1: <a href="https://example.com" target="_blank">https://example.com</a></li>
+              <li>Test Link 2: <a href="https://test.com" target="_blank">https://test.com</a></li>
+          </ul>
+          EOF
+          )
+
+          # Main index.html with embedded local content
           cat <<EOF > index.html
           <!DOCTYPE html>
           <html lang="en">
@@ -41,7 +51,6 @@ jobs:
                       color: #f5f5f5;
                       margin: 0;
                       padding: 0;
-                      line-height: 1.6;
                   }
                   .container {
                       width: 80%;
@@ -50,26 +59,37 @@ jobs:
                       background-color: #1f1f1f;
                       border-radius: 10px;
                   }
-                  .download-btn {
+                  .toggle-btn {
                       display: inline-block;
                       padding: 10px 20px;
                       background-color: #66ccff;
                       color: white;
                       border-radius: 5px;
                       text-decoration: none;
+                      cursor: pointer;
                   }
-                  .download-btn:hover {
+                  .toggle-btn:hover {
                       background-color: #ff9900;
                   }
+                  .hidden {
+                      display: none;
+                  }
               </style>
+              <script>
+                  function toggleCheckHtml() {
+                      const checkHtmlDiv = document.getElementById('check-html-content');
+                      checkHtmlDiv.classList.toggle('hidden');
+                  }
+              </script>
           </head>
           <body>
               <div class="container">
                   <h1>Extracted Proxy Links</h1>
                   <p><strong>Last Updated:</strong> $LAST_UPDATED</p>
-                  <a href="check.html" class="download-btn" target="_blank">
-                      Open link checker
-                  </a>
+                  <button class="toggle-btn" onclick="toggleCheckHtml()">Open Link Checker Tool</button>
+                  <div id="check-html-content" class="hidden">
+                      $CHECK_HTML_CONTENT
+                  </div>
               </div>
           </body>
           </html>
@@ -81,5 +101,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Update HTML to open the link checker locally"
+          git commit -m "Embed local link checker tool in the main HTML"
           git push
