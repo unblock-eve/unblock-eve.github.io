@@ -21,29 +21,27 @@ jobs:
           export TZ="America/Chicago"
           echo "LAST_UPDATED=$(date +"%B %d, %Y at %I:%M %p %Z")" >> $GITHUB_ENV
 
-      # Fetch and scrape links from the target webpage
+      # Fetch and scrape links and titles from the target webpage
       - name: Scrape Links and Titles
         run: |
           # Define target URL
           URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2024"
 
-          # Use curl and grep to fetch and parse webpage content
+          # Fetch webpage content
           RESPONSE=$(curl -s "$URL")
-          LINKS=$(echo "$RESPONSE" | grep -oP '(?<=href=")[^"]*')
-          TITLES=$(echo "$RESPONSE" | grep -oP '(?<=<h2>).*?(?=</h2>)')
 
-          # Create links.json file
+          # Use a more robust pattern to extract titles and their associated lists
           echo "{" > links.json
-
-          # Process titles and their corresponding links
-          while read -r TITLE && read -r LINK <&3; do
+          echo "$RESPONSE" | grep -oP '(?<=<h2>).*?(?=</h2>)' | while read -r TITLE; do
             echo "  \"$TITLE\": [" >> links.json
-            echo "    \"$LINK\"" >> links.json
+            LINKS=$(echo "$RESPONSE" | grep -oP "(?<=<li><a href=\")[^\"]*" | head -n 10)
+            echo "$LINKS" | while read -r LINK; do
+              echo "    \"$LINK\"," >> links.json
+            done
+            sed -i '$ s/,$//' links.json  # Remove trailing comma for the last link
             echo "  ]," >> links.json
-          done < <(echo "$TITLES") 3< <(echo "$LINKS")
-
-          # Remove the last comma and close the JSON object
-          sed -i '$ s/,$//' links.json
+          done
+          sed -i '$ s/,$//' links.json  # Remove trailing comma for the last title
           echo "}" >> links.json
 
       # Commit and push changes to the repository
