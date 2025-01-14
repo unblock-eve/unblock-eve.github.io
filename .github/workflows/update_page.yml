@@ -30,19 +30,20 @@ jobs:
           # Use curl and grep to fetch and parse webpage content
           RESPONSE=$(curl -s "$URL")
           LINKS=$(echo "$RESPONSE" | grep -oP '(?<=href=")[^"]*')
-          TITLES=$(echo "$RESPONSE" | grep -oP '(?<=<li>).*?(?=</li>)' | sed -e 's/<[^>]*>//g')
+          TITLES=$(echo "$RESPONSE" | grep -oP '(?<=<h2>).*?(?=</h2>)')
 
           # Create links.json file
           echo "{" > links.json
-          echo "  \"links\": [" >> links.json
 
-          while read -r LINK && read -r TITLE <&3; do
-            echo "    { \"title\": \"$TITLE\", \"url\": \"$LINK\" }," >> links.json
-          done < <(echo "$LINKS") 3< <(echo "$TITLES")
+          # Process titles and their corresponding links
+          while read -r TITLE && read -r LINK <&3; do
+            echo "  \"$TITLE\": [" >> links.json
+            echo "    \"$LINK\"" >> links.json
+            echo "  ]," >> links.json
+          done < <(echo "$TITLES") 3< <(echo "$LINKS")
 
           # Remove the last comma and close the JSON object
           sed -i '$ s/,$//' links.json
-          echo "  ]" >> links.json
           echo "}" >> links.json
 
       # Commit and push changes to the repository
