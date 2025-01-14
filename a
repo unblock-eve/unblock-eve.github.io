@@ -1,0 +1,29 @@
+Step-by-Step Explanation of the Encoding Process:
+Character Analysis (analyze_character): For each character in the input string, the following steps are performed:
+
+Alphabet Position: The position of the character in the alphabet is calculated (e.g., 'a' is 1, 'b' is 2, ..., 'z' is 26). If the character is not a letter (e.g., a number or symbol), this value is set to 0.
+ASCII Value: The ASCII value of the character is obtained using the ord() function. For example, the ASCII value of 'a' is 97.
+Hexadecimal Representation: The ASCII value is converted to a hexadecimal string (e.g., 'a' becomes '0x61').
+Binary Representation: The ASCII value is converted to an 8-bit binary string (e.g., 'a' becomes '01100001').
+Is Lowercase: A flag indicating whether the character is lowercase (1 if true, 0 if false).
+Is Uppercase: A flag indicating whether the character is uppercase (1 if true, 0 if false).
+Is Alphabetic: A flag indicating whether the character is an alphabetic letter (1 if true, 0 if false).
+Is Vowel: A flag indicating whether the character is a vowel ('a', 'e', 'i', 'o', 'u'). 1 if true, 0 if false.
+All of this information is concatenated into a single string for each character.
+
+Analyze String (analyze_string):
+
+This function processes the entire input string by calling analyze_character for each character and joining the results into one long string. Each character is represented by its encoded data.
+Character Shifting (shift_characters):
+
+After analyzing the string, each character in the encoded string (which is a string of data about each character) is shifted by 3 positions in the alphabet (if it is an alphabetic character). Non-alphabet characters (like numbers and symbols) remain unchanged.
+The shifting is done by:
+Converting each character to its ASCII value.
+Adding the shift value (3), while ensuring the shift wraps around the alphabet (e.g., 'z' shifts to 'c').
+Encode (encode):
+
+First, the string is analyzed using analyze_string, which returns a detailed string representing the input characters' attributes.
+Then, the analyzed string is shifted using shift_characters, producing the final encoded and shifted string.
+Reverse Shift (reverse_shift):
+
+To decode the string, the reverse shift function is applied, shifting characters back by 3 positions.
