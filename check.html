@@ -51,7 +51,6 @@
       border-radius: 5px;
       transition: background-color 0.3s ease;
     }
-
     .collapsible:hover {
       background-color: #0097a7;
     }
@@ -74,26 +73,22 @@
       border: 1px solid #333;
       transition: background-color 0.3s ease, border-color 0.3s ease;
     }
-
     .success {
       background-color: #1d2b1d;
       border-color: #4caf50;
       color: #4caf50;
     }
-
     .failure {
       background-color: #2b1d1d;
       border-color: #f44336;
       color: #f44336;
     }
-
     a {
       color: #00bcd4;
       text-decoration: none;
       font-weight: bold;
       cursor: pointer;
     }
-
     a:hover {
       text-decoration: underline;
     }
@@ -120,67 +115,80 @@
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
-
     .overlay.active {
       opacity: 1;
       pointer-events: auto;
     }
+    .overlay iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 1001;
+    }
 
-/* Topbar styling with slide-down behavior */
-/* Invisible trigger remains unchanged */
-.topbar-trigger {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
-  z-index: 1001; /* Lower than the topbar */
-  background: transparent;
-}
+    /* Invisible trigger area at the top of the overlay */
+    .trigger-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 35px;
+      z-index: 1001;
+      background: transparent;
+    }
 
-/* Simplified topbar to just host a centered button */
-.topbar {
-  position: fixed;
-  top: -80px; /* Hidden above the viewport initially */
-  left: 0;
-  width: 100%;
-  height: 80px;
-  background-color: transparent; /* No background bar */
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Center the close button */
-  transition: top 0.3s ease;
-  z-index: 1002;
-}
 
-.topbar.open {
-  top: 0;
-}
-
-/* Style update for the close button */
-.topbar button {
-  background: #00bcd4;
-  border: none;
-  color: #121212;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 20px;  /* More rounded corners */
-  cursor: pointer;
-  outline: none;
-  transition: background-color 0.3s ease;
-}
-
-.topbar button:hover {
-  background: #0097a7;
-}
-
+    .close-btn-container {
+      position: fixed;
+      top: -80px; /* hidden above view initially */
+      left: 0;
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: top 0.3s ease;
+      pointer-events: none; /* allow clicks to pass through the container */
+      z-index: 1002;
+    }
+    .close-btn-container.open {
+      top: 0;
+    }
+    /* Close button styles - re-enable click events */
+    .close-btn {
+      background: #00bcd4;
+      border: none;
+      color: #121212;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      pointer-events: auto; /* enable clicking on the button */
+    }
+    .close-btn:hover {
+      background: #0097a7;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    proxies
+  </header>
+  <div class="container">
+    <div id="results"></div>
+  </div>
+  <footer>
+    &copy; 2025 | rma
+  </footer>
 
   <!-- Overlay for displaying the clicked link in an iframe -->
   <div id="overlay" class="overlay">
-    <!-- Invisible trigger for showing the topbar -->
-    <div class="topbar-trigger" id="topbarTrigger"></div>
-    <div class="topbar" id="overlayTopbar">
-      <button id="closeOverlay">Close</button>
+    <!-- Invisible trigger area for showing the close button -->
+    <div class="trigger-area" id="triggerArea"></div>
+    <!-- Container that animates the close button; note pointer-events: none here -->
+    <div class="close-btn-container" id="closeBtnContainer">
+      <button id="closeOverlay" class="close-btn">Close</button>
     </div>
     <iframe id="iframeViewer"></iframe>
   </div>
@@ -204,26 +212,26 @@
     // Attach close event to the close button
     document.getElementById('closeOverlay').addEventListener('click', closeOverlay);
 
-    // Topbar auto-show/hide using the invisible trigger
-    const topbar = document.getElementById('overlayTopbar');
-    const trigger = document.getElementById('topbarTrigger');
+    // Use trigger area to control appearance of the close button container
+    const triggerArea = document.getElementById('triggerArea');
+    const closeBtnContainer = document.getElementById('closeBtnContainer');
 
-    trigger.addEventListener('mouseenter', () => {
-      topbar.classList.add('open');
+    // When the mouse enters trigger area, show the close button container
+    triggerArea.addEventListener('mouseenter', () => {
+      closeBtnContainer.classList.add('open');
     });
-
-    trigger.addEventListener('mouseleave', () => {
+    // When leaving the trigger area and button container, hide the close button container
+    triggerArea.addEventListener('mouseleave', () => {
       setTimeout(() => {
-        if (!topbar.matches(':hover')) {
-          topbar.classList.remove('open');
+        if (!closeBtnContainer.matches(':hover')) {
+          closeBtnContainer.classList.remove('open');
         }
       }, 100);
     });
-
-    topbar.addEventListener('mouseleave', () => {
+    closeBtnContainer.addEventListener('mouseleave', () => {
       setTimeout(() => {
-        if (!trigger.matches(':hover')) {
-          topbar.classList.remove('open');
+        if (!triggerArea.matches(':hover')) {
+          closeBtnContainer.classList.remove('open');
         }
       }, 100);
     });
@@ -318,13 +326,6 @@
         resultsDiv.textContent = `Error: ${error.message}`;
       });
   </script>
-
-
-
-  
   <script type='text/javascript' src='//pl26381512.profitableratecpm.com/1c/9c/72/1c9c72fdf95aeb65fc7f13d347ec31ea.js'></script>
 </body>
-
-
-https://www.profitableratecpm.com/b2egstgbb?key=f9e337e59d5ca7b0614560422681c78d
 </html>
