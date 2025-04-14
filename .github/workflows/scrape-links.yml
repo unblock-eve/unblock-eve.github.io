@@ -16,6 +16,7 @@ jobs:
 
       - name: Scrape page & debug output
         run: |
+          #!/usr/bin/env bash
           set -euo pipefail
 
           URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2025"
@@ -24,8 +25,8 @@ jobs:
           echo "===== STARTING SCRAPE DEBUG ====="
 
           echo "🔍 Dumping a few lines around the <h2 id=...>"
-          # Suppress broken pipe warnings by redirecting stderr to /dev/null
-          printf "%s\n" "$HTML" | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' | head -20 2>/dev/null
+          # Wrap the pipeline in a subshell and ignore non-zero exit status due to broken pipe
+          (printf "%s\n" "$HTML" | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' | head -20 2>/dev/null) || true
 
           echo ""
           echo "🔍 Extracting TITLE from <h2 id=...>...</h2>"
