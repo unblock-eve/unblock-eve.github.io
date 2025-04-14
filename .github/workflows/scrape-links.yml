@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          URL="https://example.com/your-page.html"  # ← your real URL
+          URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2025"  # ← your real URL
           HTML=$(curl -sL "$URL")
 
           # 1) extract the first <h2 id="mcetoc_…">…</h2> text
