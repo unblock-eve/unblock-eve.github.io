@@ -127,66 +127,53 @@
     }
 
 /* Topbar styling with slide-down behavior */
-.topbar {
+/* Invisible trigger remains unchanged */
+.topbar-trigger {
   position: fixed;
-  top: -100px; /* initially hidden further above the viewport */
+  top: 0;
   left: 0;
   width: 100%;
-  height: 45px; /* Increase height if necessary */
-  background-color: rgba(31, 31, 31, 0.8); /* semi-transparent */
+  height: 80px;
+  z-index: 1001; /* Lower than the topbar */
+  background: transparent;
+}
+
+/* Simplified topbar to just host a centered button */
+.topbar {
+  position: fixed;
+  top: -80px; /* Hidden above the viewport initially */
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background-color: transparent; /* No background bar */
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 15px;
-  box-sizing: border-box;
+  justify-content: center; /* Center the close button */
   transition: top 0.3s ease;
   z-index: 1002;
 }
 
 .topbar.open {
-  top: 0; /* Moves down into view */
+  top: 0;
 }
 
+/* Style update for the close button */
+.topbar button {
+  background: #00bcd4;
+  border: none;
+  color: #121212;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 20px;  /* More rounded corners */
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s ease;
+}
 
-    .topbar button {
-      background: #00bcd4;
-      border: none;
-      color: #121212;
-      padding: 8px 16px;
-      font-size: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+.topbar button:hover {
+  background: #0097a7;
+}
 
-    .overlay iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      z-index: 1001;
-    }
-
-    /* Invisible trigger element at the top of the overlay */
-    .topbar-trigger {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 80px;
-      z-index: 1001; /* Lower than the topbar */
-      background: transparent;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    proxies
-  </header>
-  <div class="container">
-    <div id="results"></div>
-  </div>
-  <footer>
-    &copy; 2025 | rma
-  </footer>
 
   <!-- Overlay for displaying the clicked link in an iframe -->
   <div id="overlay" class="overlay">
