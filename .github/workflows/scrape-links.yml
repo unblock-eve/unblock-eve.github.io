@@ -21,18 +21,17 @@ jobs:
 
           URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2025"
           HTML=$(curl -sL "$URL")
-
           echo "===== STARTING SCRAPE DEBUG ====="
           echo "Scraping URL: $URL"
 
-          # Use Perl to extract each section that starts with the relevant <h2> and its following <ul>.
-          # The regex captures the title text and everything inside the <ul>...</ul> block.
-          sections=$(echo "$HTML" | perl -0777 -ne 'while (/<h2 id="mcetoc_[^"]*">(.*?)<\/h2>\s*<ul>(.*?)<\/ul>/sg) {
-              my $t = $1;
-              my $u = $2;
-              # Remove newlines from the ul block to make parsing easier.
-              $u =~ s/\n/ /g;
-              print "$t|||$u\n";
+          # Use Perl to extract each section that starts with a matching <h2> followed by a <ul>
+          # The regex uses the ungreedy (U) modifier so that each capture is minimal.
+          sections=$(echo "$HTML" | perl -0777 -ne 'while (/<h2\s+id="mcetoc_[^"]*">(.*?)<\/h2>\s*<ul>(.*?)<\/ul>/sgU) {
+              my $title = $1;
+              my $list_block = $2;
+              # Remove newlines from the list block for easier processing.
+              $list_block =~ s/\n/ /g;
+              print "$title|||$list_block\n";
           }')
 
           if [[ -z "$sections" ]]; then
@@ -43,26 +42,29 @@ jobs:
           # Initialize an empty JSON array.
           json_array="[]"
 
-          # Process each section found
-          while IFS="|||" read -r title block; do
-            # Clean the title by stripping any HTML tags, then trim whitespace.
-            title=$(echo "$title" | sed -e 's/<[^>]*>//g' | xargs)
+          # Process each extracted section.
+          while IFS="|||" read -r raw_title block; do
+            # Clean the title by stripping any HTML tags and trimming whitespace.
+            title=$(echo "$raw_title" | sed -e 's/<[^>]*>//g' | xargs)
             echo "Found section with title: $title"
 
             # Extract individual links from the <li> items in the block.
-            links=$(echo "$block" | grep -oP '<li>\K.*?(?=</li>)' | sed 's/&nbsp;//g')
+            # Using grep with a Perl lookbehind/lookahead to grab text between <li> and </li>.
+            links=$(echo "$block" | grep -oP '(?<=<li>).*?(?=</li>)' | sed 's/&nbsp;//g')
+            if [[ -z "$links" ]]; then
+              echo "  No links found for section '$title'. Skipping."
+              continue
+            fi
 
-            # Convert the list of links (one per line) into a JSON array.
+            # Convert the list of links (one per line) into a JSON array using jq.
             links_json=$(printf "%s\n" "$links" | jq -R . | jq -s .)
-
-            # Build a JSON object for the current section.
+            # Build a JSON object for this section.
             section_json=$(jq -n --arg title "$title" --argjson links "$links_json" '{title: $title, links: $links}')
-
             # Append this section object to our JSON array.
             json_array=$(echo "$json_array" | jq --argjson section "$section_json" '. + [$section]')
           done <<< "$sections"
 
-          # Write the accumulated sections array to links.json in the repository root.
+          # Write the accumulated JSON array to links.json in the repository root.
           echo "$json_array" > links.json
           echo "📝 JSON file 'links.json' written with the scraped data."
 
