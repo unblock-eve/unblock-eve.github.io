@@ -1,63 +1,58 @@
-name: "Scrape & Update Links (Bash)"
+name: Scrape & Update Links (JS)
 
 on:
   schedule:
-    # every 3 hours
-    - cron:  '0 */3 * * *'
-  workflow_dispatch:   # manual trigger
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           persist-credentials: true
 
-      - name: Scrape page & build JSON
-        run: |
-          set -euo pipefail
+      - name: Fetch & parse HTML
+        uses: actions/github-script@v7
+        id: scraper
+        with:
+          script: |
+            const fetch = require("node-fetch");
+            const { JSDOM } = require("jsdom");
+            const fs = require("fs");
 
-          # 1) fetch the HTML
-          URL="https://example.com/your-page.html"  # ← your real URL
-          HTML=$(curl -sL "$URL")
+            // 1) Fetch
+            const url = "https://example.com/your-page.html";
+            const res = await fetch(url);
+            const text = await res.text();
 
-          # 2) extract the first <h2 id="mcetoc_…">…</h2> text
-          TITLE=$(printf "%s\n" "$HTML" \
-            | grep -oP '(?<=<h2 id="mcetoc_[^"]+">)[^<]+' \
-            | head -1)
+            // 2) Parse
+            const dom = new JSDOM(text);
+            const doc = dom.window.document;
+            const h2 = doc.querySelector('h2[id^="mcetoc_"]');
+            if (!h2) throw new Error("No <h2> found");
+            const title = h2.textContent.trim();
 
-          # 3) extract all <li>…</li> between that <h2> and its </ul>
-          LINKS=$(printf "%s\n" "$HTML" \
-            | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' \
-            | grep -oP '(?<=<li>)[^<]+' \
-            | sed 's/&nbsp;//g')
+            // 3) Next <ul> links
+            const ul = h2.nextElementSibling;
+            if (!ul || ul.tagName !== "UL") throw new Error("No <ul> after <h2>");
+            const links = Array.from(ul.querySelectorAll("li"))
+                              .map(li => li.textContent.trim());
 
-          # 4) build a JSON object under data/links.json
-          mkdir -p data
-          FILE=data/links.json
+            // 4) Load existing JSON
+            const file = "data/links.json";
+            let data = {};
+            if (fs.existsSync(file)) {
+              data = JSON.parse(fs.readFileSync(file));
+            }
 
-          # start with existing or empty object
-          if [ -f "$FILE" ]; then
-            JQ_EXISTING=". as \$orig | \$orig"
-          else
-            echo '{}' > "$FILE"
-            JQ_EXISTING=". as \$orig | \$orig"
-          fi
+            // 5) Update & write
+            data[title] = links;
+            fs.mkdirSync("data", { recursive: true });
+            fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-          # assemble the array of links
-          #   ["link1","link2",…]
-          ARR=$(printf "%s\n" "$LINKS" \
-            | jq -R . | jq -s .)
-
-          # merge into JSON under the scraped title
-          jq --arg title "$TITLE" --argjson arr "$ARR" \
-             "$JQ_EXISTING | .[$title] = \$arr" \
-             "$FILE" > "$FILE.tmp" \
-             && mv "$FILE.tmp" "$FILE"
-
-          echo "✅ Updated '$FILE' with key: $TITLE"
+            return { title, count: links.length };
 
       - name: Commit & push if changed
         run: |
