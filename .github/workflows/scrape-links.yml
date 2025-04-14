@@ -1,10 +1,9 @@
-name: Scrape & Update Links
+name: Scrape & Update Links (Debug)
 
 on:
   schedule:
-    # every 3 hours
-    - cron:  '0 */3 * * *'
-  workflow_dispatch:   # manual trigger
+    - cron:  '0 */3 * * *'  # every 3 hours
+  workflow_dispatch:         # manual trigger
 
 jobs:
   scrape:
@@ -15,51 +14,36 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Scrape page & build JSON
+      - name: Scrape page & debug output
         run: |
           set -euo pipefail
 
-          URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2025"  # ← your real URL
+          URL="https://nirbytes.com/post/1000-proxies-for-school-chromebook-2025"
           HTML=$(curl -sL "$URL")
 
-          # 1) extract the first <h2 id="mcetoc_…">…</h2> text
+          echo "===== STARTING SCRAPE DEBUG ====="
+
+          echo "🔍 Dumping a few lines around the <h2 id=...>"
+          printf "%s\n" "$HTML" | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' | head -20
+
+          echo ""
+          echo "🔍 Extracting TITLE from <h2 id=...>...</h2>"
           TITLE=$(printf "%s\n" "$HTML" \
             | grep '<h2 id="mcetoc_' \
             | head -1 \
             | sed -E 's/.*<h2 id="mcetoc_[^"]*">([^<]*)<\/h2>.*/\1/')
+          echo "📌 TITLE: $TITLE"
 
-          # 2) extract all <li>…</li> between that <h2> and its </ul>
+          echo ""
+          echo "🔍 Extracting LINKS from following <ul> list"
           LINKS=$(printf "%s\n" "$HTML" \
             | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' \
             | grep '<li>' \
             | sed -E 's/.*<li>([^<]*)<\/li>.*/\1/' \
             | sed 's/&nbsp;//g')
+          echo "📎 LINKS:"
+          printf "%s\n" "$LINKS"
 
-          # 3) build JSON file
-          mkdir -p data
-          FILE=data/links.json
-          [ -f "$FILE" ] || echo '{}' > "$FILE"
-
-          # assemble array
-          ARR=$(printf "%s\n" "$LINKS" | jq -R . | jq -s .)
-
-          # merge under TITLE
-          jq --arg title "$TITLE" --argjson arr "$ARR" \
-             '.[$title] = $arr' "$FILE" > "$FILE.tmp" \
-            && mv "$FILE.tmp" "$FILE"
-
-          echo "✅ Updated '$FILE' with key: $TITLE"
-
-      - name: Commit & push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add links.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "chore: update scraped links"
-            git push
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo ""
+          echo "🚫 Skipping file write for now (debug only)"
+          exit 0
