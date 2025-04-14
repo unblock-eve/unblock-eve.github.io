@@ -2,8 +2,8 @@ name: Scrape & Update Links (Debug)
 
 on:
   schedule:
-    - cron:  '0 */3 * * *'  # every 3 hours
-  workflow_dispatch:         # manual trigger
+    - cron: '0 */3 * * *'  # every 3 hours
+  workflow_dispatch:        # manual trigger
 
 jobs:
   scrape:
@@ -24,7 +24,8 @@ jobs:
           echo "===== STARTING SCRAPE DEBUG ====="
 
           echo "🔍 Dumping a few lines around the <h2 id=...>"
-          printf "%s\n" "$HTML" | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' | head -20
+          # Suppress broken pipe warnings by redirecting stderr to /dev/null
+          printf "%s\n" "$HTML" | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' | head -20 2>/dev/null
 
           echo ""
           echo "🔍 Extracting TITLE from <h2 id=...>...</h2>"
