@@ -25,7 +25,7 @@ jobs:
           echo "===== STARTING SCRAPE DEBUG ====="
           echo "Scraping URL: $URL"
 
-          # Use Perl to extract each section that starts with the relevant <h2> and its following <ul>
+          # Use Perl to extract each section that starts with the relevant <h2> and its following <ul>.
           # The regex captures the title text and everything inside the <ul>...</ul> block.
           sections=$(echo "$HTML" | perl -0777 -ne 'while (/<h2 id="mcetoc_[^"]*">(.*?)<\/h2>\s*<ul>(.*?)<\/ul>/sg) {
               my $t = $1;
@@ -45,12 +45,11 @@ jobs:
 
           # Process each section found
           while IFS="|||" read -r title block; do
-            # Trim whitespace from the title.
-            title=$(echo "$title" | xargs)
+            # Clean the title by stripping any HTML tags, then trim whitespace.
+            title=$(echo "$title" | sed -e 's/<[^>]*>//g' | xargs)
             echo "Found section with title: $title"
 
             # Extract individual links from the <li> items in the block.
-            # This uses grep with a Perl regex to grab the text between <li> and </li>.
             links=$(echo "$block" | grep -oP '<li>\K.*?(?=</li>)' | sed 's/&nbsp;//g')
 
             # Convert the list of links (one per line) into a JSON array.
@@ -63,9 +62,7 @@ jobs:
             json_array=$(echo "$json_array" | jq --argjson section "$section_json" '. + [$section]')
           done <<< "$sections"
 
-          # Optional: Wrap the array in a top-level object, if you prefer.
-          # final_json=$(jq -n --argjson data "$json_array" '{sections: $data}')
-          # For now, we use the array directly.
+          # Write the accumulated sections array to links.json in the repository root.
           echo "$json_array" > links.json
           echo "📝 JSON file 'links.json' written with the scraped data."
 
