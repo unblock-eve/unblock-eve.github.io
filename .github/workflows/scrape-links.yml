@@ -1,0 +1,74 @@
+name: "Scrape & Update Links (Bash)"
+
+on:
+  schedule:
+    # every 3 hours
+    - cron:  '0 */3 * * *'
+  workflow_dispatch:   # manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Scrape page & build JSON
+        run: |
+          set -euo pipefail
+
+          # 1) fetch the HTML
+          URL="https://example.com/your-page.html"  # ← your real URL
+          HTML=$(curl -sL "$URL")
+
+          # 2) extract the first <h2 id="mcetoc_…">…</h2> text
+          TITLE=$(printf "%s\n" "$HTML" \
+            | grep -oP '(?<=<h2 id="mcetoc_[^"]+">)[^<]+' \
+            | head -1)
+
+          # 3) extract all <li>…</li> between that <h2> and its </ul>
+          LINKS=$(printf "%s\n" "$HTML" \
+            | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' \
+            | grep -oP '(?<=<li>)[^<]+' \
+            | sed 's/&nbsp;//g')
+
+          # 4) build a JSON object under data/links.json
+          mkdir -p data
+          FILE=data/links.json
+
+          # start with existing or empty object
+          if [ -f "$FILE" ]; then
+            JQ_EXISTING=". as \$orig | \$orig"
+          else
+            echo '{}' > "$FILE"
+            JQ_EXISTING=". as \$orig | \$orig"
+          fi
+
+          # assemble the array of links
+          #   ["link1","link2",…]
+          ARR=$(printf "%s\n" "$LINKS" \
+            | jq -R . | jq -s .)
+
+          # merge into JSON under the scraped title
+          jq --arg title "$TITLE" --argjson arr "$ARR" \
+             "$JQ_EXISTING | .[$title] = \$arr" \
+             "$FILE" > "$FILE.tmp" \
+             && mv "$FILE.tmp" "$FILE"
+
+          echo "✅ Updated '$FILE' with key: $TITLE"
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/links.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update scraped links"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
