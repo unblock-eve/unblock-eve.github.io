@@ -14,7 +14,7 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Scrape page & debug output
+      - name: Scrape page, extract data & write JSON
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
@@ -46,6 +46,17 @@ jobs:
           echo "📎 LINKS:"
           printf "%s\n" "$LINKS"
 
+          # Convert the LINKS output (one per line) into a JSON array using jq.
+          # The -R flag reads raw input, and -s collects all lines into a JSON array.
+          LINKS_JSON=$(printf "%s\n" "$LINKS" | jq -R . | jq -s .)
+
+          # Build JSON object containing the title and links.
+          JSON_OUTPUT=$(jq -n --arg title "$TITLE" --argjson links "$LINKS_JSON" '{title: $title, links: $links}')
+
+          # Write the JSON object to links.json in the repository root.
+          echo "$JSON_OUTPUT" > links.json
+          echo "📝 JSON file 'links.json' written with the scraped data."
+
           echo ""
-          echo "🚫 Skipping file write for now (debug only)"
+          echo "🚫 Skipping file write for additional updates (debug only)"
           exit 0
