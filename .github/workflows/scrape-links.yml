@@ -15,46 +15,40 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Fetch & parse HTML in JS
-        uses: actions/github-script@v7
-        id: scraper
-        with:
-          script: |
-            const fetch = require('node-fetch');
-            const { JSDOM } = require('jsdom');
-            const fs = require('fs');
-            const path = 'data/links.json';
+      - name: Scrape page & build JSON
+        run: |
+          set -euo pipefail
 
-            // 1) Fetch page
-            const url = 'https://example.com/your-page.html'; // ← your URL
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const html = await res.text();
+          URL="https://example.com/your-page.html"  # ← your real URL
+          HTML=$(curl -sL "$URL")
 
-            // 2) Parse DOM
-            const dom = new JSDOM(html);
-            const doc = dom.window.document;
-            const h2 = doc.querySelector('h2[id^="mcetoc_"]');
-            if (!h2) throw new Error('No <h2 id="mcetoc_…"> found');
-            const title = h2.textContent.trim();
+          # 1) extract the first <h2 id="mcetoc_…">…</h2> text
+          TITLE=$(printf "%s\n" "$HTML" \
+            | grep '<h2 id="mcetoc_' \
+            | head -1 \
+            | sed -E 's/.*<h2 id="mcetoc_[^"]*">([^<]*)<\/h2>.*/\1/')
 
-            // 3) Grab next <ul> links
-            let ul = h2.nextElementSibling;
-            if (!ul || ul.tagName !== 'UL') throw new Error('No <ul> after <h2>');
-            const links = Array.from(ul.querySelectorAll('li'))
-                               .map(li => li.textContent.replace(/\u00a0/g, '').trim());
+          # 2) extract all <li>…</li> between that <h2> and its </ul>
+          LINKS=$(printf "%s\n" "$HTML" \
+            | sed -n '/<h2 id="mcetoc_/,/<\/ul>/p' \
+            | grep '<li>' \
+            | sed -E 's/.*<li>([^<]*)<\/li>.*/\1/' \
+            | sed 's/&nbsp;//g')
 
-            // 4) Load existing JSON or start empty
-            let data = {};
-            if (fs.existsSync(path)) {
-              data = JSON.parse(fs.readFileSync(path, 'utf8'));
-            }
-            // 5) Update and write
-            data[title] = links;
-            fs.mkdirSync('data', { recursive: true });
-            fs.writeFileSync(path, JSON.stringify(data, null, 2));
+          # 3) build JSON file
+          mkdir -p data
+          FILE=data/links.json
+          [ -f "$FILE" ] || echo '{}' > "$FILE"
 
-            return { title, count: links.length };
+          # assemble array
+          ARR=$(printf "%s\n" "$LINKS" | jq -R . | jq -s .)
+
+          # merge under TITLE
+          jq --arg title "$TITLE" --argjson arr "$ARR" \
+             '.[$title] = $arr' "$FILE" > "$FILE.tmp" \
+            && mv "$FILE.tmp" "$FILE"
+
+          echo "✅ Updated '$FILE' with key: $TITLE"
 
       - name: Commit & push changes
         run: |
