@@ -1,166 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Checker / RMA</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link Checker / RMA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
 
-        header {
-            background-color: #1f1f1f;
-            padding: 20px 0;
-            text-align: center;
-            color: #ffffff;
-            font-size: 1.8rem;
-            font-weight: bold;
-            border-bottom: 1px solid #333;
-        }
+    header {
+      background-color: #1f1f1f;
+      padding: 20px 0;
+      text-align: center;
+      color: #ffffff;
+      font-size: 1.8rem;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
 
-        .container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 20px;
-            background-color: #1a1a1a;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
 
-        .title {
-            font-size: 1.4rem;
-            margin: 20px 0 10px;
-            color: #00bcd4;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-        }
+    /* Collapsible button for each category */
+    .collapsible {
+      background-color: #00bcd4;
+      color: #121212;
+      cursor: pointer;
+      padding: 12px 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
 
-        .result {
-            margin: 10px 0;
-            padding: 12px;
-            border-radius: 5px;
-            border: 1px solid #333;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
+    .collapsible:hover {
+      background-color: #0097a7;
+    }
 
-        .success {
-            background-color: #1d2b1d;
-            border-color: #4caf50;
-            color: #4caf50;
-        }
+    /* Container for the dropdown content */
+    .content {
+      padding: 0 18px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out;
+      background-color: #262626;
+      border-radius: 0 0 5px 5px;
+      margin-bottom: 10px;
+    }
 
-        .failure {
-            background-color: #2b1d1d;
-            border-color: #f44336;
-            color: #f44336;
-        }
+    .result {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 5px;
+      border: 1px solid #333;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
 
-        a {
-            color: #00bcd4;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    .success {
+      background-color: #1d2b1d;
+      border-color: #4caf50;
+      color: #4caf50;
+    }
 
-        a:hover {
-            text-decoration: underline;
-        }
+    .failure {
+      background-color: #2b1d1d;
+      border-color: #f44336;
+      color: #f44336;
+    }
 
-        footer {
-            text-align: center;
-            padding: 15px 0;
-            font-size: 0.9rem;
-            color: #888;
-            background-color: #1f1f1f;
-            border-top: 1px solid #333;
-        }
-    </style>
+    a {
+      color: #00bcd4;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px 0;
+      font-size: 0.9rem;
+      color: #888;
+      background-color: #1f1f1f;
+      border-top: 1px solid #333;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        Link Checker
-    </header>
-    <div class="container">
-        <div id="results"></div>
-    </div>
-    <footer>
-        &copy; 2025 | Minimalist Black Theme | Powered by GitHub Actions
-    </footer>
+  <header>
+    Link Checker
+  </header>
+  <div class="container">
+    <div id="results"></div>
+  </div>
+  <footer>
+    &copy; 2025 | Minimalist Black Theme | Powered by GitHub Actions
+  </footer>
 
-    <script>
-        fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Failed to load links.json: ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                const resultsDiv = document.getElementById('results');
-                
-                for (const [title, links] of Object.entries(data)) {
-                    // Skip "Category: Table of Contents"
-                    if (title === "Table of Contents") continue;
+  <script>
+    // Fetch links.json data from GitHub
+    fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to load links.json: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const resultsDiv = document.getElementById('results');
 
-                    // Filter out YouTube links
-                    const validLinks = links.filter(link => !link.includes('youtube.com'));
+        // For each category in the JSON data...
+        for (const [title, links] of Object.entries(data)) {
+          // Skip "Table of Contents"
+          if (title === "Table of Contents") continue;
 
-                    // Skip empty categories
-                    if (validLinks.length === 0) continue;
+          // Filter out YouTube links
+          const validLinks = links.filter(link => !link.includes('youtube.com'));
 
-                    // Create a category title
-                    const titleDiv = document.createElement('div');
-                    titleDiv.className = 'title';
-                    titleDiv.textContent = `Category: ${title}`;
-                    resultsDiv.appendChild(titleDiv);
+          // Skip empty categories
+          if (validLinks.length === 0) continue;
 
-                    // Display valid links
-                    validLinks.forEach(link => {
-                        const resultDiv = document.createElement('div');
-                        resultDiv.className = 'result';
+          // Create the collapsible button for the category
+          const btn = document.createElement('button');
+          btn.className = 'collapsible';
+          btn.textContent = `Category: ${title}`;
+          resultsDiv.appendChild(btn);
 
-                        // Check for vercel.app domain
-                        if (link.includes('vercel.app')) {
-                            resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
-                            resultDiv.classList.add('failure');
-                            resultsDiv.appendChild(resultDiv);
-                            return;
-                        }
+          // Create the dropdown content container
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'content';
+          resultsDiv.appendChild(contentDiv);
 
-                        resultDiv.textContent = `Checking: ${link}`;
-                        resultsDiv.appendChild(resultDiv);
+          // For each valid link, create a result element
+          validLinks.forEach(link => {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result';
 
-                        // Check link status
-                        fetch(link, { mode: 'no-cors' })
-                            .then(() => {
-                                resultDiv.textContent = ''; // Clear the text
-                                
-                                // Create a clickable link
-                                const linkElement = document.createElement('a');
-                                linkElement.href = link;
-                                linkElement.target = "_blank";
-                                linkElement.textContent = link;
+            // Check for vercel.app domain to mark it as failure
+            if (link.includes('vercel.app')) {
+              resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
+              resultDiv.classList.add('failure');
+              contentDiv.appendChild(resultDiv);
+              return;
+            }
 
-                                // Append link to the result
-                                resultDiv.appendChild(linkElement);
-                                resultDiv.classList.add('success');
-                            })
-                            .catch(() => {
-                                resultDiv.textContent = `${link} - ❌ Fail`;
-                                resultDiv.classList.add('failure');
-                            });
-                    });
-                }
-            })
-            .catch(error => {
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.textContent = `Error: ${error.message}`;
-            });
-    </script>
+            resultDiv.textContent = `Checking: ${link}`;
+            contentDiv.appendChild(resultDiv);
+
+            // Check link status
+            fetch(link, { mode: 'no-cors' })
+              .then(() => {
+                // Clear previous text
+                resultDiv.textContent = '';
+                // Create a clickable link element
+                const linkElement = document.createElement('a');
+                linkElement.href = link;
+                linkElement.target = "_blank";
+                linkElement.textContent = link;
+                resultDiv.appendChild(linkElement);
+                resultDiv.classList.add('success');
+              })
+              .catch(() => {
+                resultDiv.textContent = `${link} - ❌ Fail`;
+                resultDiv.classList.add('failure');
+              });
+          });
+        }
+
+        // Add click event listeners to all collapsible buttons to toggle dropdowns
+        const collapsibles = document.getElementsByClassName("collapsible");
+        Array.from(collapsibles).forEach(btn => {
+          btn.addEventListener("click", function() {
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+              content.style.maxHeight = null;
+            } else {
+              content.style.maxHeight = content.scrollHeight + "px";
+            }
+          });
+        });
+      })
+      .catch(error => {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.textContent = `Error: ${error.message}`;
+      });
+  </script>
 </body>
 </html>
