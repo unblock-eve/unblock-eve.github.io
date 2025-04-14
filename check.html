@@ -91,6 +91,7 @@
       color: #00bcd4;
       text-decoration: none;
       font-weight: bold;
+      cursor: pointer;
     }
 
     a:hover {
@@ -105,6 +106,74 @@
       background-color: #1f1f1f;
       border-top: 1px solid #333;
     }
+
+    /* Overlay for iframe view */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Topbar styling with slide-down behavior */
+    .topbar {
+      position: fixed;
+      top: -60px; /* initially hidden above the viewport */
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: rgba(31, 31, 31, 0.8); /* semi-transparent */
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 20px;
+      box-sizing: border-box;
+      transition: top 0.3s ease;
+      z-index: 1002;
+    }
+
+    .topbar.open {
+      top: 0;
+    }
+
+    .topbar button {
+      background: #00bcd4;
+      border: none;
+      color: #121212;
+      padding: 8px 16px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .overlay iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 1001;
+    }
+
+    /* Invisible trigger element at the top of the overlay */
+    .topbar-trigger {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 80px;
+      z-index: 1001; /* Lower than the topbar */
+      background: transparent;
+    }
   </style>
 </head>
 <body>
@@ -118,7 +187,59 @@
     &copy; 2025 | rma
   </footer>
 
+  <!-- Overlay for displaying the clicked link in an iframe -->
+  <div id="overlay" class="overlay">
+    <!-- Invisible trigger for showing the topbar -->
+    <div class="topbar-trigger" id="topbarTrigger"></div>
+    <div class="topbar" id="overlayTopbar">
+      <button id="closeOverlay">Close</button>
+    </div>
+    <iframe id="iframeViewer"></iframe>
+  </div>
+
   <script>
+    // Open a URL in the overlay iframe
+    function openInOverlay(url) {
+      const overlay = document.getElementById('overlay');
+      const iframeViewer = document.getElementById('iframeViewer');
+      iframeViewer.src = url;
+      overlay.classList.add('active');
+    }
+
+    // Close the overlay
+    function closeOverlay() {
+      const overlay = document.getElementById('overlay');
+      overlay.classList.remove('active');
+      document.getElementById('iframeViewer').src = '';
+    }
+
+    // Attach close event to the close button
+    document.getElementById('closeOverlay').addEventListener('click', closeOverlay);
+
+    // Topbar auto-show/hide using the invisible trigger
+    const topbar = document.getElementById('overlayTopbar');
+    const trigger = document.getElementById('topbarTrigger');
+
+    trigger.addEventListener('mouseenter', () => {
+      topbar.classList.add('open');
+    });
+
+    trigger.addEventListener('mouseleave', () => {
+      setTimeout(() => {
+        if (!topbar.matches(':hover')) {
+          topbar.classList.remove('open');
+        }
+      }, 100);
+    });
+
+    topbar.addEventListener('mouseleave', () => {
+      setTimeout(() => {
+        if (!trigger.matches(':hover')) {
+          topbar.classList.remove('open');
+        }
+      }, 100);
+    });
+
     // Fetch links.json data from GitHub
     fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
       .then(response => {
@@ -157,7 +278,7 @@
             const resultDiv = document.createElement('div');
             resultDiv.className = 'result';
 
-            // Check for vercel.app domain to mark it as failure
+            // Check for vercel.app domain to mark as failure
             if (link.includes('vercel.app')) {
               resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
               resultDiv.classList.add('failure');
@@ -175,9 +296,11 @@
                 resultDiv.textContent = '';
                 // Create a clickable link element
                 const linkElement = document.createElement('a');
-                linkElement.href = link;
-                linkElement.target = "_blank";
                 linkElement.textContent = link;
+                linkElement.addEventListener('click', function(event) {
+                  event.preventDefault();
+                  openInOverlay(link);
+                });
                 resultDiv.appendChild(linkElement);
                 resultDiv.classList.add('success');
               })
