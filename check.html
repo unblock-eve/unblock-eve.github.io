@@ -126,26 +126,27 @@
       pointer-events: auto;
     }
 
-    /* Topbar styling with slide-down behavior */
-    .topbar {
-      position: fixed;
-      top: -60px; /* initially hidden above the viewport */
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background-color: rgba(31, 31, 31, 0.8); /* semi-transparent */
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 0 20px;
-      box-sizing: border-box;
-      transition: top 0.3s ease;
-      z-index: 1002;
-    }
+/* Topbar styling with slide-down behavior */
+.topbar {
+  position: fixed;
+  top: -100px; /* initially hidden further above the viewport */
+  left: 0;
+  width: 100%;
+  height: 80px; /* Increase height if necessary */
+  background-color: rgba(31, 31, 31, 0.8); /* semi-transparent */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 20px;
+  box-sizing: border-box;
+  transition: top 0.3s ease;
+  z-index: 1002;
+}
 
-    .topbar.open {
-      top: 0;
-    }
+.topbar.open {
+  top: 0; /* Moves down into view */
+}
+
 
     .topbar button {
       background: #00bcd4;
