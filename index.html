@@ -82,13 +82,16 @@
       backdrop-filter: blur(6px);
     }
     .result.success { border-left: 4px solid #4caf50; }
-    .result.failure  { border-left: 4px solid #f44336; }
+    .result.failure { border-left: 4px solid #f44336; }
 
     .result a {
       color: #00e5ff;
       text-decoration: none;
       flex: 1;
       word-break: break-all;
+    }
+    .result a:hover {
+      color: #81d4fa;
     }
     .icon {
       margin-left: 1rem;
@@ -151,7 +154,7 @@
             div.dataset.url = link;
             div.dataset.vercel = link.includes('vercel.app');
             div.innerHTML = `
-              <a>${link}</a>
+              <a href="${link}" target="_blank">${link}</a>
               <span class="icon">…</span>
             `;
             content.appendChild(div);
@@ -176,7 +179,6 @@
               await fetch(url, { mode: 'no-cors' });
               div.classList.replace('pending', 'success');
               div.querySelector('.icon').textContent = '✅';
-              div.querySelector('a').href = url;
             } catch {
               div.classList.replace('pending', 'failure');
               div.querySelector('.icon').textContent = '❌';
