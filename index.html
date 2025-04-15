@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7686924263467566"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RMA</title>
-  <link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
+  <title>Link Checker / RMA</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -51,6 +48,7 @@
       border-radius: 5px;
       transition: background-color 0.3s ease;
     }
+
     .collapsible:hover {
       background-color: #0097a7;
     }
@@ -73,22 +71,25 @@
       border: 1px solid #333;
       transition: background-color 0.3s ease, border-color 0.3s ease;
     }
+
     .success {
       background-color: #1d2b1d;
       border-color: #4caf50;
       color: #4caf50;
     }
+
     .failure {
       background-color: #2b1d1d;
       border-color: #f44336;
       color: #f44336;
     }
+
     a {
       color: #00bcd4;
       text-decoration: none;
       font-weight: bold;
-      cursor: pointer;
     }
+
     a:hover {
       text-decoration: underline;
     }
@@ -101,141 +102,20 @@
       background-color: #1f1f1f;
       border-top: 1px solid #333;
     }
-
-    /* Overlay for iframe view */
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.95);
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-    .overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .overlay iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      z-index: 1001;
-    }
-
-    /* Invisible trigger area at the top of the overlay */
-    .trigger-area {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 35px;
-      z-index: 1001;
-      background: transparent;
-    }
-
-
-    .close-btn-container {
-      position: fixed;
-      top: -80px; /* hidden above view initially */
-      left: 0;
-      width: 100%;
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: top 0.3s ease;
-      pointer-events: none; /* allow clicks to pass through the container */
-      z-index: 1002;
-    }
-    .close-btn-container.open {
-      top: 0;
-    }
-    /* Close button styles - re-enable click events */
-    .close-btn {
-      background: #00bcd4;
-      border: none;
-      color: #121212;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      pointer-events: auto; /* enable clicking on the button */
-    }
-    .close-btn:hover {
-      background: #0097a7;
-    }
   </style>
 </head>
 <body>
   <header>
-    proxies
+    Link Checker
   </header>
   <div class="container">
     <div id="results"></div>
   </div>
   <footer>
-    &copy; 2025 | rma
+    &copy; 2025 | Minimalist Black Theme | Powered by GitHub Actions
   </footer>
 
-  <!-- Overlay for displaying the clicked link in an iframe -->
-  <div id="overlay" class="overlay">
-    <!-- Invisible trigger area for showing the close button -->
-    <div class="trigger-area" id="triggerArea"></div>
-    <!-- Container that animates the close button; note pointer-events: none here -->
-    <div class="close-btn-container" id="closeBtnContainer">
-      <button id="closeOverlay" class="close-btn">Close</button>
-    </div>
-    <iframe id="iframeViewer"></iframe>
-  </div>
-
   <script>
-    // Open a URL in the overlay iframe
-    function openInOverlay(url) {
-      const overlay = document.getElementById('overlay');
-      const iframeViewer = document.getElementById('iframeViewer');
-      iframeViewer.src = url;
-      overlay.classList.add('active');
-    }
-
-    // Close the overlay
-    function closeOverlay() {
-      const overlay = document.getElementById('overlay');
-      overlay.classList.remove('active');
-      document.getElementById('iframeViewer').src = '';
-    }
-
-    // Attach close event to the close button
-    document.getElementById('closeOverlay').addEventListener('click', closeOverlay);
-
-    // Use trigger area to control appearance of the close button container
-    const triggerArea = document.getElementById('triggerArea');
-    const closeBtnContainer = document.getElementById('closeBtnContainer');
-
-    // When the mouse enters trigger area, show the close button container
-    triggerArea.addEventListener('mouseenter', () => {
-      closeBtnContainer.classList.add('open');
-    });
-    // When leaving the trigger area and button container, hide the close button container
-    triggerArea.addEventListener('mouseleave', () => {
-      setTimeout(() => {
-        if (!closeBtnContainer.matches(':hover')) {
-          closeBtnContainer.classList.remove('open');
-        }
-      }, 100);
-    });
-    closeBtnContainer.addEventListener('mouseleave', () => {
-      setTimeout(() => {
-        if (!triggerArea.matches(':hover')) {
-          closeBtnContainer.classList.remove('open');
-        }
-      }, 100);
-    });
-
     // Fetch links.json data from GitHub
     fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
       .then(response => {
@@ -261,7 +141,7 @@
           // Create the collapsible button for the category
           const btn = document.createElement('button');
           btn.className = 'collapsible';
-          btn.textContent = `${title} proxies`;
+          btn.textContent = `Category: ${title}`;
           resultsDiv.appendChild(btn);
 
           // Create the dropdown content container
@@ -274,7 +154,7 @@
             const resultDiv = document.createElement('div');
             resultDiv.className = 'result';
 
-            // Check for vercel.app domain to mark as failure
+            // Check for vercel.app domain to mark it as failure
             if (link.includes('vercel.app')) {
               resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
               resultDiv.classList.add('failure');
@@ -292,11 +172,9 @@
                 resultDiv.textContent = '';
                 // Create a clickable link element
                 const linkElement = document.createElement('a');
+                linkElement.href = link;
+                linkElement.target = "_blank";
                 linkElement.textContent = link;
-                linkElement.addEventListener('click', function(event) {
-                  event.preventDefault();
-                  openInOverlay(link);
-                });
                 resultDiv.appendChild(linkElement);
                 resultDiv.classList.add('success');
               })
@@ -326,8 +204,5 @@
         resultsDiv.textContent = `Error: ${error.message}`;
       });
   </script>
-
-  
-
 </body>
 </html>
