@@ -3,29 +3,335 @@
 <head>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7686924263467566"
      crossorigin="anonymous"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Extracted Proxy Links</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RMA</title>
+  <link rel="shortcut icon" type="image/jpg" href="favicon.png"/>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #121212; color: #f5f5f5; margin:0; padding:0 }
-    .container { width:80%; margin:30px auto; padding:20px; background:#1f1f1f; border-radius:10px }
-    .toggle-btn { padding:10px 20px; background:#66ccff; color:#fff; border-radius:5px; cursor:pointer }
-    .toggle-btn:hover { background:#ff9900 }
-    #checker-frame { width:100%; height:600px; border:none; display:none }
-  </style>
-  <script>
-    function toggleChecker() {
-      const f = document.getElementById('checker-frame');
-      f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
     }
-  </script>
+
+    header {
+      background-color: #1f1f1f;
+      padding: 20px 0;
+      text-align: center;
+      color: #ffffff;
+      font-size: 1.8rem;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Collapsible button for each category */
+    .collapsible {
+      background-color: #00bcd4;
+      color: #121212;
+      cursor: pointer;
+      padding: 12px 18px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    .collapsible:hover {
+      background-color: #0097a7;
+    }
+
+    /* Container for the dropdown content */
+    .content {
+      padding: 0 18px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out;
+      background-color: #262626;
+      border-radius: 0 0 5px 5px;
+      margin-bottom: 10px;
+    }
+
+    .result {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 5px;
+      border: 1px solid #333;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .success {
+      background-color: #1d2b1d;
+      border-color: #4caf50;
+      color: #4caf50;
+    }
+    .failure {
+      background-color: #2b1d1d;
+      border-color: #f44336;
+      color: #f44336;
+    }
+    a {
+      color: #00bcd4;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px 0;
+      font-size: 0.9rem;
+      color: #888;
+      background-color: #1f1f1f;
+      border-top: 1px solid #333;
+    }
+
+    /* Overlay for iframe view */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .overlay iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 1001;
+    }
+
+    /* Invisible trigger area at the top of the overlay */
+    .trigger-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 35px;
+      z-index: 1001;
+      background: transparent;
+    }
+
+
+    .close-btn-container {
+      position: fixed;
+      top: -80px; /* hidden above view initially */
+      left: 0;
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: top 0.3s ease;
+      pointer-events: none; /* allow clicks to pass through the container */
+      z-index: 1002;
+    }
+    .close-btn-container.open {
+      top: 0;
+    }
+    /* Close button styles - re-enable click events */
+    .close-btn {
+      background: #00bcd4;
+      border: none;
+      color: #121212;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      pointer-events: auto; /* enable clicking on the button */
+    }
+    .close-btn:hover {
+      background: #0097a7;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    proxies
+  </header>
   <div class="container">
-    <h1>Extracted Proxy Links</h1>
-    <p><strong>Last Updated:</strong> {{LAST_UPDATED}}</p>
-    <button class="toggle-btn" onclick="toggleChecker()">Open Link Checker Tool</button>
-    <iframe id="checker-frame" src="check.html"></iframe>
+    <div id="results"></div>
   </div>
+  <footer>
+    &copy; 2025 | rma
+  </footer>
+
+  <!-- Overlay for displaying the clicked link in an iframe -->
+  <div id="overlay" class="overlay">
+    <!-- Invisible trigger area for showing the close button -->
+    <div class="trigger-area" id="triggerArea"></div>
+    <!-- Container that animates the close button; note pointer-events: none here -->
+    <div class="close-btn-container" id="closeBtnContainer">
+      <button id="closeOverlay" class="close-btn">Close</button>
+    </div>
+    <iframe id="iframeViewer"></iframe>
+  </div>
+
+  <script>
+    // Open a URL in the overlay iframe
+    function openInOverlay(url) {
+      const overlay = document.getElementById('overlay');
+      const iframeViewer = document.getElementById('iframeViewer');
+      iframeViewer.src = url;
+      overlay.classList.add('active');
+    }
+
+    // Close the overlay
+    function closeOverlay() {
+      const overlay = document.getElementById('overlay');
+      overlay.classList.remove('active');
+      document.getElementById('iframeViewer').src = '';
+    }
+
+    // Attach close event to the close button
+    document.getElementById('closeOverlay').addEventListener('click', closeOverlay);
+
+    // Use trigger area to control appearance of the close button container
+    const triggerArea = document.getElementById('triggerArea');
+    const closeBtnContainer = document.getElementById('closeBtnContainer');
+
+    // When the mouse enters trigger area, show the close button container
+    triggerArea.addEventListener('mouseenter', () => {
+      closeBtnContainer.classList.add('open');
+    });
+    // When leaving the trigger area and button container, hide the close button container
+    triggerArea.addEventListener('mouseleave', () => {
+      setTimeout(() => {
+        if (!closeBtnContainer.matches(':hover')) {
+          closeBtnContainer.classList.remove('open');
+        }
+      }, 100);
+    });
+    closeBtnContainer.addEventListener('mouseleave', () => {
+      setTimeout(() => {
+        if (!triggerArea.matches(':hover')) {
+          closeBtnContainer.classList.remove('open');
+        }
+      }, 100);
+    });
+
+    // Fetch links.json data from GitHub
+    fetch('https://raw.githubusercontent.com/unblock-eve/unblock-eve.github.io/refs/heads/main/links.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to load links.json: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const resultsDiv = document.getElementById('results');
+
+        // For each category in the JSON data...
+        for (const [title, links] of Object.entries(data)) {
+          // Skip "Table of Contents"
+          if (title === "Table of Contents") continue;
+
+          // Filter out YouTube links
+          const validLinks = links.filter(link => !link.includes('youtube.com'));
+
+          // Skip empty categories
+          if (validLinks.length === 0) continue;
+
+          // Create the collapsible button for the category
+          const btn = document.createElement('button');
+          btn.className = 'collapsible';
+          btn.textContent = `${title} proxies`;
+          resultsDiv.appendChild(btn);
+
+          // Create the dropdown content container
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'content';
+          resultsDiv.appendChild(contentDiv);
+
+          // For each valid link, create a result element
+          validLinks.forEach(link => {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result';
+
+            // Check for vercel.app domain to mark as failure
+            if (link.includes('vercel.app')) {
+              resultDiv.textContent = `${link} - ❌ Invalid (vercel.app domain)`;
+              resultDiv.classList.add('failure');
+              contentDiv.appendChild(resultDiv);
+              return;
+            }
+
+            resultDiv.textContent = `Checking: ${link}`;
+            contentDiv.appendChild(resultDiv);
+
+            // Check link status
+            fetch(link, { mode: 'no-cors' })
+              .then(() => {
+                // Clear previous text
+                resultDiv.textContent = '';
+                // Create a clickable link element
+                const linkElement = document.createElement('a');
+                linkElement.textContent = link;
+                linkElement.addEventListener('click', function(event) {
+                  event.preventDefault();
+                  openInOverlay(link);
+                });
+                resultDiv.appendChild(linkElement);
+                resultDiv.classList.add('success');
+              })
+              .catch(() => {
+                resultDiv.textContent = `${link} - ❌ Fail`;
+                resultDiv.classList.add('failure');
+              });
+          });
+        }
+
+        // Add click event listeners to all collapsible buttons to toggle dropdowns
+        const collapsibles = document.getElementsByClassName("collapsible");
+        Array.from(collapsibles).forEach(btn => {
+          btn.addEventListener("click", function() {
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+              content.style.maxHeight = null;
+            } else {
+              content.style.maxHeight = content.scrollHeight + "px";
+            }
+          });
+        });
+      })
+      .catch(error => {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.textContent = `Error: ${error.message}`;
+      });
+  </script>
+
+  
+<script async="async" data-cfasync="false" src="//pl26381731.profitableratecpm.com/07d9e8a46cceddf2e096af7933a98c82/invoke.js"></script>
+<div id="container-07d9e8a46cceddf2e096af7933a98c82"></div>
+
+  
+  <script type='text/javascript' src='//pl26381512.profitableratecpm.com/1c/9c/72/1c9c72fdf95aeb65fc7f13d347ec31ea.js'></script>
 </body>
 </html>
